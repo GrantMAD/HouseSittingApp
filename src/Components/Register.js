@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query,getDocs, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
 
 const Register = () => {
     const usersCollectionRef = collection(db, "Requests");
-    const [firstName, setFirstName] = useState("");
+    const [name, setName] = useState("");
     const [address, setAddress] = useState("");
     const [contactNumber, setContactNumber] = useState("");
     const [email, setEmail] = useState("");
@@ -18,32 +18,52 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         try {
-            setIsLoading(true)
-            await addDoc(usersCollectionRef, {
-                firstName: firstName,
-                address: address,
-                contactNumber: contactNumber,
-                email: email,
-                experience: experience,
-                reasonForApplying: reasonForApplying,
-            });
-
-            setFirstName("");
-            setAddress("");
-            setContactNumber("");
-            setEmail("");
-            setExperience("");
-            setReasonForApplying("");
-        
-
-            console.log('Data submitted successfully!');
-            navigate("/")
+            setIsLoading(true);
+    
+            // Fetch user document based on the provided email
+            const userQuery = query(collection(db, "users"), where("email", "==", email));
+            const userQuerySnapshot = await getDocs(userQuery);
+    
+            if (!userQuerySnapshot.empty) {
+                // User found, retrieve the first document
+                const userDocument = userQuerySnapshot.docs[0].data();
+    
+                // Include the profileImage value in the data to be saved to "Requests" collection
+                const requestData = {
+                    name: name,
+                    address: address,
+                    contactNumber: contactNumber,
+                    email: email,
+                    experience: experience,
+                    reasonForApplying: reasonForApplying,
+                    profileImage: userDocument.profileImage || "", // Assuming profileImage is a string
+                };
+    
+                // Save the data to the "Requests" collection
+                await addDoc(usersCollectionRef, requestData);
+    
+                setName("");
+                setAddress("");
+                setContactNumber("");
+                setEmail("");
+                setExperience("");
+                setReasonForApplying("");
+    
+                console.log('Data submitted successfully!');
+                navigate("/");
+            } else {
+                // User not found
+                console.error('User not found with the provided email');
+            }
         } catch (error) {
             console.error('Error submitting data:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
+    
 
     useEffect(() => {
         contactUsRef.current.scrollIntoView({ behavior: "smooth" });
@@ -78,7 +98,7 @@ const Register = () => {
                                                         id="first-name"
                                                         autoComplete="given-name"
                                                         className="mt-1 block w-full rounded-md border border-black shadow-sm focus:ring-indigo-500 sm:text-sm p-1"
-                                                        onChange={(e) => setFirstName(e.target.value)}
+                                                        onChange={(e) => setName(e.target.value)}
                                                     />
                                                 </div>
                                                 <div className="w-1/2 mb-3">

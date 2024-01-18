@@ -1,71 +1,50 @@
 import { faUser, faMinus, faPlus, faMapMarkerAlt, faPhone, faEnvelope, faUserTie, faComment } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { collection, getDocs, addDoc, where, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import "../index.css";
 
 const Requests = () => {
-    const [Requests, setRequests] = useState([]);
-    const reportsCollectionRef = collection(db, 'Requests');
+    const [requests, setRequests] = useState([]);
+    const requestsCollectionRef = collection(db, 'Requests');
+    const [isLoading, setIsLoading] = useState(false);
     const [openAccordionId, setOpenAccordionId] = useState(null);
     const [selectedRequest, setSelectedRequest] = useState(null);
-    const [forceUpdate, setForceUpdate] = useState(false);
+
+    useEffect(() => {
+        const getRequests = async () => {
+            try {
+                const requestData = await getDocs(requestsCollectionRef);
+                setRequests(requestData.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+            } catch (error) {
+                console.error('Error fetching requests:', error);
+            }
+        };
+
+        getRequests();
+    }, [requestsCollectionRef]);
 
     const handleApprove = async () => {
-        if (!selectedRequest) return;
-    
         try {
+            setIsLoading(true);
             const approvedSitterRef = await addDoc(collection(db, 'ApprovedSitters'), {
-                name: selectedRequest.firstName,
-                email: selectedRequest.email,
+                name: selectedRequest.name,
                 address: selectedRequest.address,
+                profileImage: selectedRequest.profileImage, // Assuming you have a profileImage field
             });
-    
-            const userQuery = await getDocs(collection(db, 'users'), where('email', '==', selectedRequest.email));
-    
-            if (userQuery.size > 0) {
-                const userDoc = userQuery.docs[0];
-                const profileImage = userDoc.data().profileImage;
-                const uid = userDoc.data().uid; // Add this line to get the user's uid
-    
-                await updateDoc(doc(db, 'ApprovedSitters', approvedSitterRef.id), {
-                    profileImage: profileImage,
-                    uid: uid, // Add this line to store the user's uid in ApprovedSitters collection
-                });
-            }
-    
+
+            // Delete the document in the Requests collection
             await deleteDoc(doc(db, 'Requests', selectedRequest.id));
-    
-            setSelectedRequest(null);
-            setOpenAccordionId(null);
-            setForceUpdate(prevState => !prevState);
+
+            // Log the reference to the new ApprovedSitters document
+            console.log("Approved Sitter Document Reference:", approvedSitterRef);
         } catch (error) {
-            console.error("Error approving request:", error);
+            console.error('Error approving sitter:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
-    
-    
-
-    useEffect(() => {
-        const getRequests = async () => {
-            const reportData = await getDocs(reportsCollectionRef);
-            setRequests(reportData.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        };
-
-        getRequests();
-    }, [forceUpdate, reportsCollectionRef]);
-    
-
-    useEffect(() => {
-        const getRequests = async () => {
-            const reportData = await getDocs(reportsCollectionRef);
-            setRequests(reportData.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        };
-
-        getRequests();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <div className="min-h-screen pt-32">
@@ -76,10 +55,10 @@ const Requests = () => {
                 <h1>This is where requests for registration to become a house sitter are posted. Review the users data and either approve the user to become a house sitter by clicking on the approve button or decline the user by clicking on the decline button.</h1>
             </div>
             <div className="mt-5 mb-10">
-                {Requests.length === 0 ? (
+                {requests.length === 0 ? (
                     <p className="text-center lg:text-2xl md:text-2xl text-lg font-semibold">There are currently no requests</p>
                 ) : (
-                    Requests.map((request, index) => (
+                    requests.map((request, index) => (
                         <div class="flex flex-col items-center mb-3 lg:mr-[25%] lg:ml-[25%] md:ml-[4%] md:mr-[4%]">
                             <div class="w-full pr-10 pl-10">
                                 <div key={request.id}>
@@ -106,7 +85,7 @@ const Requests = () => {
                                         <div class="accordion__content overflow-hidden bg-gray-100 transition duration-500 ease-in-out">
                                             <div class="bg-white p-5 md:p-10 rounded-br-lg rounded-bl-lg shadow-xl shadow-gray-500 border border-blue-800">
                                                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                                                    <h1 class="text-xl md:text-2xl mb-3 md:mb-8 font-semibold underline underline-offset-4 decoration-1 text-black text-center">{request.firstName} Request</h1>
+                                                    <h1 class="text-xl md:text-2xl mb-3 md:mb-8 font-semibold underline underline-offset-4 decoration-1 text-black text-center">{request.name} Request</h1>
                                                 </div>
                                                 <div className="flex flex-col text-start">
                                                     <div className="mb-4">
@@ -152,12 +131,16 @@ const Requests = () => {
                                                     >
                                                         Decline
                                                     </button>
-                                                    <button
-                                                        className="bg-gradient-to-l from-blue-800 to-violet-600 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-zinc-200 font-bold py-2 px-4 rounded"
-                                                        onClick={handleApprove}
-                                                    >
-                                                        Approve
-                                                    </button>
+                                                    {isLoading ? (
+                                                        <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
+                                                    ) : (
+                                                        <button
+                                                            className="bg-gradient-to-l from-blue-800 to-violet-600 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-zinc-200 font-bold py-2 px-4 rounded"
+                                                            onClick={handleApprove}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

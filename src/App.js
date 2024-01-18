@@ -11,7 +11,6 @@ import AboutUs from './Components/AboutUs.js';
 import Register from './Components/Register.js';
 import Sitters from './Components/Sitters.js';
 import Requests from './Components/Requests.js';
-import PublicProfile from './Components/PublicProfile.js';
 import React from 'react';
 import { useState } from 'react';
 import './App.css';
@@ -36,7 +35,6 @@ function App() {
         <Route path="/SignUp" element={<SignUp funcNav={setShowNav}/>} />
         <Route path="/SignIn" element={<SignIn funcNav={setShowNav}/>} />
         <Route path="/ProfileForm" element={<ProfileForm/>} />
-        <Route path="/public-profile/:uid" element={<PublicProfile />} />
         </Routes>
       { showNav &&
         <Footer/>

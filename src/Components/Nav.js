@@ -4,8 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { db } from "../firebase";
 import { getDocs, collection, query, where } from "firebase/firestore";
+import { useLocation } from 'react-router-dom';
 
 const Nav = () => {
+  const location = useLocation();
+  const updatedProfileImage = location.state && location.state.updatedProfileImage;
   const [isUserAuthenticated, setUserAuthenticated] = useState(false);
   const [isImageDropdownOpen, setImageDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -53,7 +56,7 @@ const Nav = () => {
           if (userDocSnap.size > 0) {
             const userData = userDocSnap.docs[0].data();
             setUserDisplayName(userData.name || '');
-            
+
             localStorage.setItem("profileImage", userData.profileImage);
             localStorage.setItem("userDisplayName", userData.name || '');
           }
@@ -135,9 +138,9 @@ const Nav = () => {
                       >
                         <div className="flex items-center">
                           <span className="sr-only">Open user menu</span>
-                          <img className="h-8 w-8 rounded-full border border-blue-700 hover:scale-125 hover:border-2" 
-                          src={localStorage.getItem('profileImage') || "/images/profileAvatar.png"} 
-                          alt="" />
+                          <img className="h-8 w-8 rounded-full border border-blue-700 hover:scale-125 hover:border-2"
+                            src={updatedProfileImage || localStorage.getItem('profileImage') || "/images/profileAvatar.png"}
+                            alt="" />
                           <div className="flex flex-col items-start">
                             <span className="ml-3 text-gray-800 font-semibold">Welcome back,</span>
                             <h1 className="ml-3 font-bold text-blue-700">{`${userDisplayName}`}</h1>

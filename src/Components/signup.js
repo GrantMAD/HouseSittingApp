@@ -53,6 +53,10 @@ const Signup = (props) => {
         }
     })
 
+    useEffect(() => {
+        loginButtonRef.current = document.getElementById("loginButton");
+    }, []);
+
     return (
         <div className="min-h-screen p-60 bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700">
             <div className="flex border-2 border-blue-700 rounded-2xl bg-white">

@@ -78,7 +78,7 @@ const ProfileForm = () => {
 
         await updateDoc(userDocRef, updatedUser);
         setProfileUpdated(!profileUpdated);
-        navigate('/Profile');
+        navigate('/Profile', { state: { updatedProfileImage: profileURL } });
     };
 
     const uploadProfileImage = async () => {

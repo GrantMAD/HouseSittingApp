@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { db, auth } from "../firebase";
 import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
@@ -13,6 +14,8 @@ const Profile = () => {
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState()
   const [showTooltip, setShowTooltip] = useState(false);
+  const location = useLocation();
+  const updatedProfileImage = location.state && location.state.updatedProfileImage;
 
   useEffect(() => {
     onAuthStateChanged(auth, (currentUser) => {
@@ -88,7 +91,7 @@ const Profile = () => {
                   className="w-48 h-48 bg-indigo-100 mx-auto rounded-full drop-shadow-2xl absolute inset-x-0 top-0 -mt-24 flex items-center justify-center"
                 >
                   <img
-                    src={localStorage.getItem('profileImage') || "/images/profileAvatar.png"}
+                    src={updatedProfileImage || localStorage.getItem('profileImage') || "/images/profileAvatar.png"}
                     alt=""
                     className="w-48 h-48 rounded-full border border-blue-600"
                   />
