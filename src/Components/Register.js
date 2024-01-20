@@ -38,7 +38,8 @@ const Register = () => {
                     email: email,
                     experience: experience,
                     reasonForApplying: reasonForApplying,
-                    profileImage: userDocument.profileImage || "", // Assuming profileImage is a string
+                    profileImage: userDocument.profileImage || "",
+                    memberSince: userDocument.memberSince,
                 };
     
                 // Save the data to the "Requests" collection

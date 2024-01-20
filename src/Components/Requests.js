@@ -1,6 +1,9 @@
 import { faUser, faMinus, faPlus, faMapMarkerAlt, faPhone, faEnvelope, faUserTie, faComment } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import "../index.css";
@@ -31,7 +34,16 @@ const Requests = () => {
             const approvedSitterRef = await addDoc(collection(db, 'ApprovedSitters'), {
                 name: selectedRequest.name,
                 address: selectedRequest.address,
-                profileImage: selectedRequest.profileImage, // Assuming you have a profileImage field
+                profileImage: selectedRequest.profileImage,
+                memberSince: selectedRequest.memberSince
+            });
+            toast.success('User has been approved', {
+                position: 'bottom-right',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
             });
 
             // Delete the document in the Requests collection
@@ -41,6 +53,14 @@ const Requests = () => {
             console.log("Approved Sitter Document Reference:", approvedSitterRef);
         } catch (error) {
             console.error('Error approving sitter:', error);
+            toast.error('Error approving sitter', {
+                position: 'bottom-right',
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -65,16 +85,16 @@ const Requests = () => {
                                     <input type="checkbox" name="panel" id={`panel-${index + 1}`} class="hidden" />
                                     <label
                                         for={`panel-${index + 1}`}
-                                        class="relative block bg-gray-800  text-zinc-200 p-4 shadow-md accordion rounded-tl-lg rounded-tr-lg hover:bg-gray-700 font-semibold text-start"
+                                        class="relative block bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700  text-zinc-200 p-4 shadow-md accordion rounded-tl-lg rounded-tr-lg hover:bg-gray-700 font-semibold text-start"
                                         onClick={() => {
                                             setSelectedRequest(request);
                                             setOpenAccordionId((prev) => (prev === request.id ? null : request.id));
                                         }}
                                     >
                                         <div className='flex justify-between'>
-                                            <div className='ml-6'>
-                                                <FontAwesomeIcon icon={faUser} className="mr-3" />
-                                                Registration request from {request.firstName}
+                                            <div className='ml-6 text-white'>
+                                                <FontAwesomeIcon icon={faUser} className="mr-3 text-black" />
+                                                Registration request
                                             </div>
                                             <div className='mr-6'>
                                                 <FontAwesomeIcon icon={openAccordionId ? faMinus : faPlus} />
@@ -85,7 +105,10 @@ const Requests = () => {
                                         <div class="accordion__content overflow-hidden bg-gray-100 transition duration-500 ease-in-out">
                                             <div class="bg-white p-5 md:p-10 rounded-br-lg rounded-bl-lg shadow-xl shadow-gray-500 border border-blue-800">
                                                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                                                    <h1 class="text-xl md:text-2xl mb-3 md:mb-8 font-semibold underline underline-offset-4 decoration-1 text-black text-center">{request.name} Request</h1>
+                                                    <h1 class="text-xl md:text-2xl mb-3 font-semibold underline underline-offset-4 decoration-1 text-black text-center">Registration Request</h1>
+                                                </div>
+                                                <div>
+                                                    <p className='md:mb-8 text-start text-gray-500 text-sm'>You have a registration request from {request.name}</p>
                                                 </div>
                                                 <div className="flex flex-col text-start">
                                                     <div className="mb-4">
@@ -135,7 +158,7 @@ const Requests = () => {
                                                         <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                                                     ) : (
                                                         <button
-                                                            className="bg-gradient-to-l from-blue-800 to-violet-600 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-zinc-200 font-bold py-2 px-4 rounded"
+                                                            className="bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-zinc-200 font-bold py-2 px-4 rounded"
                                                             onClick={handleApprove}
                                                         >
                                                             Approve
@@ -150,6 +173,19 @@ const Requests = () => {
                         </div>
                     ))
                 )}
+            </div>
+            <div>
+                <ToastContainer
+                    position="bottom-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                />
             </div>
         </div>
     )
