@@ -40,6 +40,7 @@ const Register = () => {
                     reasonForApplying: reasonForApplying,
                     profileImage: userDocument.profileImage || "",
                     memberSince: userDocument.memberSince,
+                    uid:userDocument.uid
                 };
     
                 // Save the data to the "Requests" collection

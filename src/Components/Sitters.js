@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { collection, getDocs } from "firebase/firestore";
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { db } from "../firebase";
@@ -7,6 +8,7 @@ import "../index.css";
 
 const Sitters = () => {
     const [approvedSitters, setApprovedSitters] = useState([]);
+    const contactUsRef = useRef();
 
     const StarRating = ({ rating }) => {
         // Assuming rating is a number from 1 to 5
@@ -21,7 +23,13 @@ const Sitters = () => {
         const fetchApprovedSitters = async () => {
             try {
                 const approvedSittersData = await getDocs(collection(db, 'ApprovedSitters'));
-                setApprovedSitters(approvedSittersData.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                setApprovedSitters(
+                    approvedSittersData.docs.map(doc => ({
+                        id: doc.id,
+                        userUid: doc.data().uid, 
+                        ...doc.data()
+                    }))
+                );
             } catch (error) {
                 console.error("Error fetching approved sitters:", error);
             }
@@ -31,7 +39,10 @@ const Sitters = () => {
     }, []);
 
     return (
-        <div className="min-h-screen pt-32">
+        <div
+            className="min-h-screen pt-32"
+            ref={contactUsRef}
+        >
             <div>
                 <h1 className="text-black text-4xl font-semibold underline underline-offset-4 decoration-blue-700">Find a Sitter</h1>
             </div>
@@ -58,11 +69,12 @@ const Sitters = () => {
                                 </div>
                             </div>
                             <div class="flex gap-2 px-2">
-                                <button
+                                <Link
                                     class="flex-1 rounded-full bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 text-white dark:text-white antialiased font-bold hover:scale-110 px-4 py-2"
+                                    to={`/PublicProfile/${sitter.userUid}`}
                                 >
                                     Profile
-                                </button>
+                                </Link>
                                 <button
                                     class="flex-1 rounded-full border-2 border-blue-700 dark:border-gray-700 font-semibold text-black dark:text-white px-4 py-2">
                                     Message

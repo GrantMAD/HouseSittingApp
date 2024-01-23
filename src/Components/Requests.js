@@ -31,11 +31,14 @@ const Requests = () => {
     const handleApprove = async () => {
         try {
             setIsLoading(true);
+            
             const approvedSitterRef = await addDoc(collection(db, 'ApprovedSitters'), {
                 name: selectedRequest.name,
+                uid:selectedRequest.uid,
                 address: selectedRequest.address,
                 profileImage: selectedRequest.profileImage,
-                memberSince: selectedRequest.memberSince
+                memberSince: selectedRequest.memberSince,
+                email: selectedRequest.email
             });
             toast.success('User has been approved', {
                 position: 'bottom-right',
