@@ -6,7 +6,7 @@ import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/fire
 import { deleteUser } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
+import {  faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 
 const Profile = () => {
@@ -198,26 +198,6 @@ const Profile = () => {
                 <p className="text-gray-800 lg:px-16">{user.about || "None"}</p>
               </div>
             </div>
-            <div className="mt-3 flex flex-col justify-center">
-              <h1 className="text-2xl text-blue-600 font-bold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800 text-center">User Review's</h1>
-              <div>
-                <div className="flex flex-row justify-center mt-5">
-                  <h1 className="text-lg mb-3">
-                   <FontAwesomeIcon icon={faUser} className="text-lg mr-2 text-blue-600" />Rohan Davidson
-                  </h1>
-                </div>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-              </div>
-              <div>
-                <div className="flex flex-row justify-center mt-5">
-                  <h1 className="text-lg mb-3">
-                    <FontAwesomeIcon icon={faUser} className="text-lg mr-2 text-blue-600" />Rohan Davidson
-                  </h1>
-                </div>
-                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-              </div>
-            </div>
-
           </div>
         })}
       </div>

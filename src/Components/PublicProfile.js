@@ -1,14 +1,16 @@
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { collection, where, getDocs, query } from 'firebase/firestore';
+import { collection, where, getDocs, query, addDoc, doc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
+import { faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 
 const PublicProfile = () => {
     const { userUid } = useParams();
     const [userData, setUserData] = useState({});
+    const [newReview, setNewReview] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -16,12 +18,16 @@ const PublicProfile = () => {
                 const usersCollectionRef = collection(db, 'users');
                 const queryCondition = where('uid', '==', userUid);
                 const userQuerySnapshot = await getDocs(query(usersCollectionRef, queryCondition));
-                console.log('User Query Snapshot:', userQuerySnapshot.docs);
 
                 if (!userQuerySnapshot.empty) {
                     const userDoc = userQuerySnapshot.docs[0];
-                    setUserData({ id: userDoc.id, ...userDoc.data() });
-                    console.log('User Data:', { id: userDoc.id, ...userDoc.data() });
+                    const userId = userDoc.id;
+
+
+                    const reviewsCollectionRef = collection(db, 'users', userId, 'reviews');
+                    const reviewsQuerySnapshot = await getDocs(reviewsCollectionRef);
+                    const reviews = reviewsQuerySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+                    setUserData({ id: userId, ...userDoc.data(), reviews });
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -29,19 +35,114 @@ const PublicProfile = () => {
         };
 
 
+
         if (userUid) {
             fetchUserData();
         }
+        
     }, [userUid]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            setIsLoading(true);
+            const userDocRef = doc(db, 'users', userData.id);
+            const userDocSnapshot = await getDocs(collection(userDocRef, 'reviews'));
+
+            const currentUserData = await getCurrentUserData();
+
+            const timestamp = new Date();
+
+            if (!userDocSnapshot.empty) {
+                const newReviewDocRef = await addDoc(collection(userDocRef, 'reviews'), {
+                    content: newReview,
+                    timestamp: timestamp,
+                    username: currentUserData.name,
+                    profileImage: currentUserData.profileImage,
+                });
+
+
+                setUserData((prevUserData) => ({
+                    ...prevUserData,
+                    reviews: [...prevUserData.reviews, { id: newReviewDocRef.id, content: newReview, timestamp: timestamp, username: currentUserData.name, profileImage: currentUserData.profileImage }],
+                }));
+            } else {
+                const newReviewsCollectionRef = await addDoc(collection(userDocRef, 'reviews'), {
+                    reviews: [{
+                        content: newReview,
+                        timestamp: timestamp,
+                        username: currentUserData.name,
+                        profileImage: currentUserData.profileImage,
+                    }],
+                });
+
+                setUserData((prevUserData) => ({
+                    ...prevUserData,
+                    reviews: [{ id: newReviewsCollectionRef.id, content: newReview, timestamp: timestamp, username: currentUserData.name, profileImage: currentUserData.profileImage }],
+                }));
+            }
+
+            setNewReview('');
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const getCurrentUserData = async () => {
+        try {
+            const currentUser = auth.currentUser;
+
+            if (currentUser) {
+                const currentUserUid = currentUser.uid;
+                const usersCollectionRef = collection(db, 'users');
+                const queryCondition = where('uid', '==', currentUserUid);
+                const userQuerySnapshot = await getDocs(query(usersCollectionRef, queryCondition));
+
+                if (!userQuerySnapshot.empty) {
+                    const currentUserDoc = userQuerySnapshot.docs[0];
+                    return { name: currentUserDoc.data().name, profileImage: currentUserDoc.data().profileImage };
+                } else {
+                    console.error('Current user not found in the users collection.');
+                }
+            } else {
+                console.error('No user is currently signed in.');
+                
+            }
+        } catch (error) {
+            console.error('Error fetching current user data:', error);
+            
+        }
+    };
+
+    const formatTimestamp = (timestamp) => {
+        if (!timestamp) {
+            return 'No timestamp available';
+        }
+
+        if (timestamp instanceof Date) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return timestamp.toLocaleString('en-US', options);
+        } else if (timestamp.toDate instanceof Function) {
+            const date = timestamp.toDate();
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return date.toLocaleString('en-US', options);
+        } else {
+            return 'Invalid timestamp format';
+        }
+    };
 
     const socialMediaIcons = {
         facebook: faFacebook,
         twitter: faTwitter,
         instagram: faInstagram,
-      };
+    };
+
     return (
         <main className="min-h-screen p-4 md:p-8 lg:p-10  mx-auto bg-zinc-200">
-            {userData ? (
+            {userData && Object.keys(userData).length > 0 ? (
                 <div className="p-4 md:p-8 lg:p-16">
                     <div
                         className="p-8 bg-white shadow mt-24 border border-blue-600 rounded-lg"
@@ -130,25 +231,29 @@ const PublicProfile = () => {
                                             </div>
                                         </div>
                                         <div className="ml-20 mt-5">
-                                            <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Social Media</h1>
-                                            {Object.entries(userData.socialMediaLinks).map(([platform, link]) => (
-                                                <div key={platform} className="flex items-center mt-2">
-                                                    <FontAwesomeIcon
-                                                        icon={socialMediaIcons[platform]}
-                                                        className="text-blue-600 mr-2"
-                                                        style={{ cursor: "pointer" }}
-                                                        onClick={() => window.open(link, '_blank')}
-                                                    />
-                                                    <a
-                                                        href={link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-gray-800 hover:underline"
-                                                    >
-                                                        {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                                                    </a>
+                                            {Object.keys(userData.socialMediaLinks).length > 0 && (
+                                                <div>
+                                                    <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Social Media</h1>
+                                                    {Object.entries(userData.socialMediaLinks).map(([platform, link]) => (
+                                                        <div key={platform} className="flex items-center mt-2">
+                                                            <FontAwesomeIcon
+                                                                icon={socialMediaIcons[platform]}
+                                                                className="text-blue-600 mr-2"
+                                                                style={{ cursor: "pointer" }}
+                                                                onClick={() => window.open(link, '_blank')}
+                                                            />
+                                                            <a
+                                                                href={link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-gray-800 hover:underline"
+                                                            >
+                                                                {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                                                            </a>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -159,23 +264,57 @@ const PublicProfile = () => {
                             </div>
                         </div>
                         <div className="mt-3 flex flex-col justify-center">
-                            <h1 className="text-2xl text-blue-600 font-bold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800 text-center">User Review's</h1>
-                            <div>
-                                <div className="flex flex-row justify-center mt-5">
-                                    <h1 className="text-lg mb-3">
-                                        <FontAwesomeIcon icon={faUser} className="text-lg mr-2 text-blue-600" />Rohan Davidson
+
+                            <div className="p-4 md:p-8 lg:p-16 lg:pt-6">
+                                <div className="mt-3 flex flex-col justify-center">
+                                    <h1 className="text-2xl text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center">
+                                        User Reviews
                                     </h1>
+                                    <div>
+                                        <form onSubmit={handleReviewSubmit} className="mt-5">
+                                            <label htmlFor="newReview" className="text-lg">
+                                                Add a Review for {userData.name}
+                                            </label>
+                                            <textarea
+                                                id="newReview"
+                                                value={newReview}
+                                                onChange={(e) => setNewReview(e.target.value)}
+                                                className="w-full h-32 p-2 border border-gray-300 rounded-md mt-3"
+                                                required
+                                            />
+                                            {isLoading ? (
+                                                <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
+                                            ) : (
+                                                <button
+                                                    type="submit"
+                                                    className="bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 font-semibold text-white px-4 py-2 mt-3 rounded-md"
+                                                >
+                                                    Submit
+                                                </button>
+                                            )}
+                                        </form>
+                                    </div>
+                                    {userData.reviews && userData.reviews.length > 0 && (
+                                        <div className="mt-5">
+                                            {userData.reviews.map((review) => (
+                                                <div key={review.id} className="mb-4">
+                                                    <div className="flex justify-center text-lg mb-1">
+                                                        <img
+                                                            src={review.profileImage || "/images/profileAvatar.png"}
+                                                            alt="Profile"
+                                                            className="w-8 h-8 rounded-full mr-2"
+                                                        />
+                                                        <span className="font-semibold">{review.username}</span>
+                                                    </div>
+                                                    <h1 className="text-gray-500 text-sm">{formatTimestamp(review.timestamp)}</h1>
+                                                    <p>{review.content !== undefined ? String(review.content) : 'No content available'}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
                             </div>
-                            <div>
-                                <div className="flex flex-row justify-center mt-5">
-                                    <h1 className="text-lg mb-3">
-                                        <FontAwesomeIcon icon={faUser} className="text-lg mr-2 text-blue-600" />Rohan Davidson
-                                    </h1>
-                                </div>
-                                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-                            </div>
+
                         </div>
 
                     </div>
