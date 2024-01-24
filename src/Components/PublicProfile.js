@@ -167,19 +167,33 @@ const PublicProfile = () => {
 
                             <div className="p-4 md:p-8 lg:p-16 lg:pt-6">
                                 <div className="mt-3 flex flex-col justify-center">
-                                    <h1 className="text-2xl text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center">
-                                        User Reviews
-                                    </h1>
-                                    <div className='mt-5'>
-                                        <div className='flex justify-center items-center mb-3'>
-                                            <img
-                                                src='/images/profileAvatar.png'
-                                                alt=''
-                                                className='rounded-full h-8 w-8 mr-2'
-                                            />
-                                            <h1>Grant davidson</h1>
+                                    <div className="mt-3 flex flex-col text-center">
+                                        <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-5">Add a Review</h1>
+                                        <textarea
+
+                                            placeholder="Write your review here..."
+                                            className="w-full h-24 p-2 border border-gray-300 rounded-md mb-3"
+                                        />
+                                        <button
+
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                        >
+                                            Submit Review
+                                        </button>
+                                    </div>
+                                    <div className="mt-3">
+                                        <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-3">Reviews</h1>
+                                        <div className='mt-5'>
+                                            <div className='flex items-center justify-center mb-3'>
+                                                <img
+                                                    src="/images/profileAvatar.png"
+                                                    alt=""
+                                                    className='rounded-full h-8 w-8 mr-2'
+                                                />
+                                                <h1>Grant Davidson</h1>
+                                            </div>
+                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
                                         </div>
-                                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
                                     </div>
                                 </div>
                             </div>
