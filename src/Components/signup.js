@@ -54,7 +54,7 @@ const Signup = (props) => {
     })
 
     useEffect(() => {
-        loginButtonRef.current = document.getElementById("loginButton");
+        loginButtonRef.current = document.getElementById("signupButton");
     }, []);
 
     return (
@@ -121,6 +121,7 @@ const Signup = (props) => {
                             <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                         ) : (
                             <button
+                                id="signupButton"
                                 type="submit"
                                 className="w-2/6 bg-gradient-to-r from-blue-700 via-cyan-900 to-green-400 text-center py-3 rounded-lg text-white focus:outline-none my-1 font-semibold"
                                 onClick={register}
