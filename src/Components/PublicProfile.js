@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot, updateDoc, arrayUnion, getDoc, setDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
@@ -14,26 +14,33 @@ const PublicProfile = () => {
     const [newReview, setNewReview] = useState('');
     const [reviews, setReviews] = useState([]);
     const navigate = useNavigate();
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [starsHovered, setStarsHovered] = useState(0);
 
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const usersCollectionRef = collection(db, 'users');
-                const queryCondition = where('uid', '==', userUid);
-                const userQuerySnapshot = await getDocs(query(usersCollectionRef, queryCondition));
-
+                const userQuerySnapshot = await getDocs(query(usersCollectionRef, where('uid', '==', userUid)));
+    
                 if (!userQuerySnapshot.empty) {
                     const userDoc = userQuerySnapshot.docs[0];
                     setUserData({ id: userDoc.id, ...userDoc.data() });
-
+    
+                    // Assuming the user's ratings are stored as an array in the 'ratings' field
+                    const averageRating = calculateAverageRating(userDoc.data().ratings);
+    
+                    // Use the calculated average rating directly
+                    console.log('Average Rating:', averageRating);
+    
                     // Listen for changes in the "reviews" sub-collection
                     const reviewsCollectionRef = collection(userDoc.ref, 'reviews');
                     const unsubscribe = onSnapshot(reviewsCollectionRef, (snapshot) => {
                         const reviewsData = snapshot.docs.map((doc) => doc.data());
                         setReviews(reviewsData);
                     });
-
+    
                     // Cleanup the listener when the component unmounts
                     return () => unsubscribe();
                 }
@@ -41,11 +48,93 @@ const PublicProfile = () => {
                 console.error('Error fetching user data:', error);
             }
         };
-
+    
         if (userUid) {
             fetchUserData();
         }
     }, [userUid]);
+    
+
+    const calculateAverageRating = (ratings) => {
+        if (!ratings || ratings.length === 0) return 0;
+
+        const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+        const averageRating = totalRating / ratings.length;
+
+        // Round to the nearest half
+        const roundedRating = Math.round(averageRating * 2) / 2;
+
+        return roundedRating;
+    };
+
+    const handleStarClick = async (newRating) => {
+        try {
+            console.log('User UID:', userUid);
+            const usersCollectionRef = collection(db, 'users');
+    
+            // Query for the correct user document using the 'uid' field
+            const userQuerySnapshot = await getDocs(
+                query(usersCollectionRef, where('uid', '==', userUid))
+            );
+    
+            if (!userQuerySnapshot.empty) {
+                const userDocRef = userQuerySnapshot.docs[0].ref;
+                console.log('User Document Reference:', userDocRef);
+    
+                // Fetch the current document data
+                const userDocSnapshot = await getDoc(userDocRef);
+    
+                if (userDocSnapshot.exists()) {
+                    console.log('User Document Data:', userDocSnapshot.data());
+    
+                    // Check if 'ratings' array exists, create it if not
+                    if (!userDocSnapshot.data().ratings) {
+                        console.log('Creating ratings array.');
+                        await setDoc(userDocRef, { ratings: [] }, { merge: true });
+                    }
+    
+                    // Check if 'totalRating' field exists, create it if not
+                    if (!userDocSnapshot.data().totalRating) {
+                        console.log('Creating roundedRating field.');
+                        await setDoc(userDocRef, { roundedRating: 0 }, { merge: true });
+                    }
+    
+                    // Update the ratings array and totalRating field
+                    await updateDoc(userDocRef, {
+                        ratings: arrayUnion(newRating),
+                    });
+    
+                    // Fetch the updated document data
+                    const updatedUserDocSnapshot = await getDoc(userDocRef);
+    
+                    // Handle case where ratings field is initially undefined
+                    const userRatings = updatedUserDocSnapshot.data().ratings || [];
+    
+                    const newRoundedRating = calculateAverageRating(userRatings);
+    
+                    // Update the roundedRating field directly in the user document
+                    await updateDoc(userDocRef, {
+                        roundedRating: newRoundedRating,
+                    });
+    
+                    // Show feedback for 1 second
+                    setShowFeedback(true);
+                    setTimeout(() => {
+                        setShowFeedback(false);
+                    }, 1000);
+    
+                    console.log('Rating updated successfully');
+                } else {
+                    console.error('User document does not exist.');
+                }
+            } else {
+                console.error('No user document found with the provided uid.');
+            }
+        } catch (error) {
+            console.error('Error updating rating:', error);
+        }
+    };
+    
 
     const socialMediaIcons = {
         facebook: faFacebook,
@@ -84,6 +173,18 @@ const PublicProfile = () => {
 
                     // Clear the input field after submission
                     setNewReview('');
+
+                    // Show feedback for 1 second
+                    setShowFeedback(true);
+                    setTimeout(() => {
+                        setShowFeedback(false);
+                    }, 1000);
+
+                    // Reset stars to no color after 3 seconds
+                    setTimeout(() => {
+                        setShowFeedback(false); // Hide the feedback in case it's still visible
+                        setStarsHovered(0); // Reset the stars to no color
+                    }, 3000);
                 } else {
                     console.error('User not found.');
                 }
@@ -93,6 +194,10 @@ const PublicProfile = () => {
         } catch (error) {
             console.error('Error submitting review:', error);
         }
+    };
+
+    const handleStarHover = (hoveredStars) => {
+        setStarsHovered(hoveredStars);
     };
 
 
@@ -124,7 +229,25 @@ const PublicProfile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3">
                             <div className="grid grid-cols-3 text-center order-last md:order-first mt-20 md:mt-0 pl-32">
                                 <div className="relative">
-
+                                    <div className="mt-3 flex flex-col text-center">
+                                        <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-3">
+                                            Rate User
+                                        </h1>
+                                        <div>
+                                            {[1, 2, 3, 4, 5].map((value) => (
+                                                <span
+                                                    key={value}
+                                                    onClick={() => handleStarClick(value)}
+                                                    onMouseEnter={() => handleStarHover(value)}
+                                                    onMouseLeave={() => handleStarHover(0)}
+                                                    className={`cursor-pointer text-3xl ${value <= starsHovered ? 'text-yellow-500' : 'text-gray-300'} hover:text-yellow-500`}
+                                                >
+                                                    {value <= starsHovered ? '★' : '☆'}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {showFeedback && <div className="text-green-500 mt-2">Rating submitted!</div>}
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative">
@@ -141,10 +264,10 @@ const PublicProfile = () => {
 
                             <div className="space-x-8 lg:space-x-8 md:space-x-2 flex justify-center mt-32 mr-14 md:mt-0 md:justify-center lg:justify-end lg:mr-5">
                                 <button
-                                    className="text-white py-2 px-4 uppercase rounded bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
+                                    className="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
                                     onClick={backToFind}
                                 >
-                                    Back to find sitter
+                                    Back to find sitters
                                 </button>
                             </div>
                         </div>

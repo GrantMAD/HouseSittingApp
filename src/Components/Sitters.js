@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
@@ -11,32 +11,55 @@ const Sitters = () => {
     const contactUsRef = useRef();
 
     const StarRating = ({ rating }) => {
-        // Assuming rating is a number from 1 to 5
+        // Assuming rating is a number from 0 to 5
         const stars = Array.from({ length: 5 }, (_, index) => (
-            <span key={index} className={`text-yellow-400 ${index < rating ? "fill-current" : "fill-transparent"} text-2xl`}>&#9733;</span>
+            <span
+                key={index}
+                className={`text-2xl ${
+                    index < rating
+                        ? "text-yellow-400" // Filled star color
+                        : "text-gray-300"   // Empty star color
+                }`}
+            >
+                &#9733;
+            </span>
         ));
-
+    
         return <div className="flex">{stars}</div>;
     };
+    
 
     useEffect(() => {
         const fetchApprovedSitters = async () => {
             try {
                 const approvedSittersData = await getDocs(collection(db, 'ApprovedSitters'));
-                setApprovedSitters(
-                    approvedSittersData.docs.map(doc => ({
+                const sitters = await Promise.all(approvedSittersData.docs.map(async (doc) => {
+                    const userData = await getUserData(doc.data().uid);
+                    return {
                         id: doc.id,
                         userUid: doc.data().uid, 
+                        roundedRating: userData.roundedRating || 0, 
                         ...doc.data()
-                    }))
-                );
+                    };
+                }));
+                setApprovedSitters(sitters);
             } catch (error) {
                 console.error("Error fetching approved sitters:", error);
             }
         };
 
+        const getUserData = async (userUid) => {
+            const userQuerySnapshot = await getDocs(query(collection(db, 'users'), where('uid', '==', userUid)));
+            if (!userQuerySnapshot.empty) {
+                return userQuerySnapshot.docs[0].data();
+            }
+            return {};
+        };
+
         fetchApprovedSitters();
     }, []);
+
+    
 
     return (
         <div
@@ -65,7 +88,7 @@ const Sitters = () => {
                                         <FontAwesomeIcon icon={faClock} className="text-blue-600 mr-2" />
                                         <h1>{sitter.memberSince}</h1>
                                     </div>
-                                    <StarRating rating={sitter.rating} />
+                                    <StarRating rating={sitter.roundedRating} />
                                 </div>
                             </div>
                             <div class="flex gap-2 px-2">
