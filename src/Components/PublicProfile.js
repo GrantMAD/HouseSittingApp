@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot, updateDoc, arrayUnion, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
@@ -16,7 +16,7 @@ const PublicProfile = () => {
     const navigate = useNavigate();
     const [showFeedback, setShowFeedback] = useState(false);
     const [starsHovered, setStarsHovered] = useState(0);
-
+    const [alreadyRatedMessageVisible, setAlreadyRatedMessageVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -87,21 +87,26 @@ const PublicProfile = () => {
                 if (userDocSnapshot.exists()) {
                     console.log('User Document Data:', userDocSnapshot.data());
     
-                    // Check if 'ratings' array exists, create it if not
-                    if (!userDocSnapshot.data().ratings) {
-                        console.log('Creating ratings array.');
-                        await setDoc(userDocRef, { ratings: [] }, { merge: true });
+                    // Check if the current user has already rated this user
+                    const currentUserUid = await getCurrentUserUid();
+                    const alreadyRated = userDocSnapshot.data().ratedBy && userDocSnapshot.data().ratedBy.includes(currentUserUid);
+                    
+                    if (alreadyRated) {
+                        // Display message indicating that the user has already rated this user
+                        setAlreadyRatedMessageVisible(true);
+                        
+                        // Hide the message after 3 seconds
+                        setTimeout(() => {
+                            setAlreadyRatedMessageVisible(false);
+                        }, 3000);
+    
+                        return;
                     }
     
-                    // Check if 'totalRating' field exists, create it if not
-                    if (!userDocSnapshot.data().totalRating) {
-                        console.log('Creating roundedRating field.');
-                        await setDoc(userDocRef, { roundedRating: 0 }, { merge: true });
-                    }
-    
-                    // Update the ratings array and totalRating field
+                    // Add the current user's UID to the ratedBy array
                     await updateDoc(userDocRef, {
                         ratings: arrayUnion(newRating),
+                        ratedBy: arrayUnion(currentUserUid),
                     });
     
                     // Fetch the updated document data
@@ -247,6 +252,7 @@ const PublicProfile = () => {
                                             ))}
                                         </div>
                                         {showFeedback && <div className="text-green-500 mt-2">Rating submitted!</div>}
+                                        {alreadyRatedMessageVisible && <div className="text-red-500 mt-2 font-semibold">You have already voted for this user</div>}
                                     </div>
                                 </div>
                             </div>
@@ -264,10 +270,15 @@ const PublicProfile = () => {
 
                             <div className="space-x-8 lg:space-x-8 md:space-x-2 flex justify-center mt-32 mr-14 md:mt-0 md:justify-center lg:justify-end lg:mr-5">
                                 <button
-                                    className="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
+                                    className="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
                                     onClick={backToFind}
                                 >
                                     Back to find sitters
+                                </button>
+                                <button
+                                    class="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
+                                    >
+                                    Message User
                                 </button>
                             </div>
                         </div>
