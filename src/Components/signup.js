@@ -37,7 +37,8 @@ const Signup = (props) => {
                 userId: generatedUserId,
                 uid: user.uid,
                 profileImage: "",
-                socialMediaLinks: {},      
+                socialMediaLinks: {},  
+                role:"User",    
             });
     
             navigate('/SignIn');
