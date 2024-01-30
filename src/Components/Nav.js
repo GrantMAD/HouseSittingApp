@@ -11,8 +11,10 @@ const Nav = () => {
   const updatedProfileImage = location.state && location.state.updatedProfileImage;
   const [isUserAuthenticated, setUserAuthenticated] = useState(false);
   const [isImageDropdownOpen, setImageDropdownOpen] = useState(false);
+  const [isAdminPanelOpen, setAdminPanelOpen] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState('');
+  const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
 
   const toggleImageDropdown = () => {
@@ -21,6 +23,10 @@ const Nav = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleAdminPanel = () => {
+    setAdminPanelOpen(!isAdminPanelOpen);
   };
 
   useEffect(() => {
@@ -56,6 +62,7 @@ const Nav = () => {
           if (userDocSnap.size > 0) {
             const userData = userDocSnap.docs[0].data();
             setUserDisplayName(userData.name || '');
+            setUserRole(userData.role || '');
 
             localStorage.setItem("profileImage", userData.profileImage);
             localStorage.setItem("userDisplayName", userData.name || '');
@@ -151,7 +158,22 @@ const Nav = () => {
                     {isImageDropdownOpen && (
                       <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white pt-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
                         <a href="/Profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white" role="menuitem" tabIndex="-1" id="user-menu-item-0">Your Profile</a>
-                        <a href="/Requests" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white" role="menuitem" tabIndex="-1" id="user-menu-item-0">Requests</a>
+                        {isUserAuthenticated && userRole === 'Admin' && (
+                          <div className={`relative ${isAdminPanelOpen ? 'border border-blue-700' : ''}`}>
+                            <button
+                              type="button"
+                              className="block text-black hover:text-white hover:bg-blue-700 px-3 py-2 text-sm w-full"
+                              onClick={toggleAdminPanel}
+                            >
+                              Admin Panel
+                            </button>
+                            {isAdminPanelOpen && (
+                              <div className="bg-zinc-100">
+                                <a href="/Requests" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white" role="menuitem">Requests</a>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <a href="/"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white" role="menuitem" tabIndex="-1" id="user-menu-item-0"
                           onClick={handleLogout}

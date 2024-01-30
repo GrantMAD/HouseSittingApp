@@ -122,7 +122,6 @@ const PublicProfile = () => {
                         roundedRating: newRoundedRating,
                     });
     
-                    // Show feedback for 1 second
                     setShowFeedback(true);
                     setTimeout(() => {
                         setShowFeedback(false);
