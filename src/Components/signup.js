@@ -1,4 +1,6 @@
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { collection, addDoc } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +12,7 @@ const Signup = (props) => {
     const [userName, setUserName] = useState("");
     const [userEmail, setUserEmail] = useState("");
     const [userPassword, setUserPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const usersCollectionRef = collection(db, "users");
     const [isLoading, setIsLoading] = useState(false);
     const loginButtonRef = useRef(null);
@@ -25,22 +28,22 @@ const Signup = (props) => {
             const formattedDate = currentDate.toDateString();
             const hashedName = SHA256(userName).toString();
             const generatedUserId = hashedName.slice(0, 10);
-    
+
             await addDoc(usersCollectionRef, {
                 name: userName,
                 email: userEmail,
-                number:"",
-                about:"",
+                number: "",
+                about: "",
                 dateOfBirth: "",
                 gender: "",
                 memberSince: formattedDate,
                 userId: generatedUserId,
                 uid: user.uid,
                 profileImage: "",
-                socialMediaLinks: {},  
-                role:"User",    
+                socialMediaLinks: {},
+                role: "User",
             });
-    
+
             navigate('/SignIn');
         } catch (error) {
             console.error("Error creating user:", error);
@@ -104,20 +107,27 @@ const Signup = (props) => {
                                 }
                             }}
                         />
-                        <input
-                            type="text"
-                            className="border-2 border-blue-700 bg-gray-200 placeholder-black w-2/5 mb-4 text-black rounded-lg p-2"
-                            name="fullname"
-                            placeholder="Password"
-                            onChange={(event) => {
-                                setUserPassword(event.target.value);
-                            }}
-                            onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                    loginButtonRef.current.click();
-                                }
-                            }}
-                        />
+                        <div className="flex flex-col items-center w-full relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                className="border-2 border-blue-700 bg-gray-200 placeholder-black w-2/5 mb-4 text-black rounded-lg p-2"
+                                name="password"
+                                placeholder="Password"
+                                value={userPassword}
+                                onChange={(event) => setUserPassword(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        loginButtonRef.current.click();
+                                    }
+                                }}
+                            />
+                            <FontAwesomeIcon
+                                icon={showPassword ? faEyeSlash : faEye}
+                                className="absolute top-3.5 right-52 cursor-pointer text-gray-500"
+                                onClick={() => setShowPassword(!showPassword)}
+                            />
+                        </div>
+
                         {isLoading ? (
                             <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                         ) : (

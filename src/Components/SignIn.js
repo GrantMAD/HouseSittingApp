@@ -1,4 +1,6 @@
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
@@ -6,6 +8,7 @@ import "../index.css";
 const SignIn = (props) => {
     const [signInEmail, setSignInEmail] = useState('');
     const [signInPassword, setSignInPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const loginButtonRef = useRef(null);
     const navigate = useNavigate();
@@ -63,20 +66,27 @@ const SignIn = (props) => {
                                 }
                             }}
                         />
-                        <input
-                            type="text"
-                            className="border-2 border-blue-700 bg-gray-200 placeholder-black w-2/5 mb-4 text-black rounded-lg p-2"
-                            name="fullname"
-                            placeholder="Password"
-                            onChange={(event) => {
-                                setSignInPassword(event.target.value);
-                            }}
-                            onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                    loginButtonRef.current.click();
-                                }
-                            }}
-                        />
+                        <div className="flex flex-col items-center w-full relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                className="border-2 border-blue-700 bg-gray-200 placeholder-black w-2/5 mb-4 text-black rounded-lg p-2"
+                                name="fullname"
+                                placeholder="Password"
+                                onChange={(event) => {
+                                    setSignInPassword(event.target.value);
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        loginButtonRef.current.click();
+                                    }
+                                }}
+                            />
+                            <FontAwesomeIcon
+                                icon={showPassword ? faEyeSlash : faEye}
+                                className="absolute top-3.5 right-52 cursor-pointer text-gray-500"
+                                onClick={() => setShowPassword(!showPassword)}
+                            />
+                        </div>
                         {isLoading ? (
                             <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                         ) : (
