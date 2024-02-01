@@ -1,9 +1,10 @@
-import "../index.css";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { db } from "../firebase";
-import { getDocs, collection, query, where } from "firebase/firestore";
+import { getDocs, collection, query, where, orderBy, doc, deleteDoc } from "firebase/firestore";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 
 const Nav = () => {
@@ -11,10 +12,13 @@ const Nav = () => {
   const updatedProfileImage = location.state && location.state.updatedProfileImage;
   const [isUserAuthenticated, setUserAuthenticated] = useState(false);
   const [isImageDropdownOpen, setImageDropdownOpen] = useState(false);
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [isAdminPanelOpen, setAdminPanelOpen] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDisplayName, setUserDisplayName] = useState('');
   const [userRole, setUserRole] = useState('');
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
 
   const toggleImageDropdown = () => {
@@ -28,6 +32,47 @@ const Nav = () => {
   const toggleAdminPanel = () => {
     setAdminPanelOpen(!isAdminPanelOpen);
   };
+
+  const toggleNotification = async () => {
+    // Check if the user is authenticated and has a role
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user && userRole) {
+      // Fetch user's role from the database
+      const userDocRef = collection(db, 'users');
+      const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
+
+      if (userDocSnap.size > 0) {
+        const userData = userDocSnap.docs[0].data();
+        const userRole = userData.role || '';
+
+        setNotificationOpen(!isNotificationOpen);
+
+        if (userRole === 'Admin') {
+          // Fetch notifications only if user is admin
+          if (!isNotificationOpen) {
+            try {
+              const notificationsRef = collection(db, "adminNotifications");
+              const q = query(notificationsRef, orderBy("timestamp", "desc"));
+              const querySnapshot = await getDocs(q);
+              const notificationsData = [];
+              querySnapshot.forEach((doc) => {
+                notificationsData.push(doc.data());
+              });
+              setNotifications(notificationsData);
+            } catch (error) {
+              console.error("Error fetching notifications:", error);
+            }
+          }
+        } else {
+          // If user is not admin, set notifications to an empty array
+          setNotifications([]);
+        }
+      }
+    }
+  };
+
 
   useEffect(() => {
     const auth = getAuth();
@@ -78,6 +123,65 @@ const Nav = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        // Check if user is authenticated and has a role
+        if (user && userRole) {
+          // Fetch user's role from the database
+          const userDocRef = collection(db, 'users');
+          const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
+
+          if (userDocSnap.size > 0) {
+            const userData = userDocSnap.docs[0].data();
+            const userRole = userData.role || '';
+
+            // Fetch notification count only if user is admin
+            if (userRole === 'Admin') {
+              const notificationsRef = collection(db, "adminNotifications");
+              const querySnapshot = await getDocs(notificationsRef);
+              const count = querySnapshot.size;
+              setNotificationCount(count);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
+
+    fetchNotificationCount();
+  }, [userRole]);
+
+  const handleNotificationClick = async (notificationId, destination) => {
+    try {
+      navigate(destination);
+  
+      await deleteNotification(notificationId);
+  
+      setNotifications(prevNotifications => prevNotifications.filter(notification => notification.notificationId !== notificationId));
+      setNotificationCount(prevCount => prevCount - 1);
+    } catch (error) {
+      console.error("Error handling notification click:", error);
+    }
+  };
+  
+  
+
+  const deleteNotification = async (notificationId) => {
+    try {
+      const notificationsRef = collection(db, "adminNotifications");
+      await deleteDoc(doc(notificationsRef, notificationId));
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
+  };
+
+
+
 
   return (
     <nav class="fixed w-full bg-white drop-shadow-lg border-b border-blue-700 z-10">
@@ -118,7 +222,36 @@ const Nav = () => {
                 </div>
               </div>
             </div>
+
             <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="relative">
+                <FontAwesomeIcon
+                  icon={faBell}
+                  className="text-gray-600 hidden sm:block cursor-pointer"
+                  onClick={toggleNotification}
+                />
+                {notificationCount > 0 && (
+                  <span className="absolute hidden sm:block animate-pulse top-0 right-0 transform translate-x-1/2 -translate-y-1/2 lg:flex items-center justify-center lg:h-4 lg:w-4 h-3 w-3 rounded-full bg-red-500 text-white text-xs">{notificationCount}</span>
+                )}
+                {isNotificationOpen && (
+                  <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-700 pt-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-start" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
+                    <h1 className='text-white font-semibold mb-1 pl-4'>Notificaitons</h1>
+                    {notifications.length > 0 ? (
+                      notifications.map((notification, index) => (
+                        <div key={index} className="px-4 py-2 text-sm text-white border-t border-white flex flex-col justify-between items-center">
+                          <span>{notification.message}</span>
+                          <button className="bg-blue-700 text-white font-semibold p-2 rounded-md mt-2" onClick={() => handleNotificationClick(notification.notificationId, notification.destination)}>
+                            {notification.buttonLabel || "View"}
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-white">No notifications</div>
+                    )}
+
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 className="hidden relative rounded-full p-1 text-gray-800 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
@@ -170,6 +303,7 @@ const Nav = () => {
                             {isAdminPanelOpen && (
                               <div className="bg-zinc-100">
                                 <a href="/Requests" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white" role="menuitem">Requests</a>
+                                <a href="/Users" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white" role="menuitem">Users</a>
                               </div>
                             )}
                           </div>
@@ -213,7 +347,7 @@ const Nav = () => {
         </div>
       </div>
     </nav>
-
-  )
+  );
 }
+
 export default Nav;

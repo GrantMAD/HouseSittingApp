@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { db } from "../firebase";
-import { collection, addDoc, query,getDocs, where } from "firebase/firestore";
+import { collection, addDoc, query, getDocs, where, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
 
 const Register = () => {
+    const adminNotificationsCollectionRef = collection(db, "adminNotifications");
     const usersCollectionRef = collection(db, "Requests");
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
@@ -45,6 +46,23 @@ const Register = () => {
     
                 // Save the data to the "Requests" collection
                 await addDoc(usersCollectionRef, requestData);
+
+                const notificationData = {
+                    notificationId: '', // Placeholder for the notificationId
+                    title: "New Registration",
+                    message: `New registration by ${userDocument.name}`,
+                    timestamp: new Date(),
+                    type: "Admin",
+                    destination: "/Requests",
+                    buttonLabel: "View Request",
+                  };
+                  
+                  const notificationRef = await addDoc(adminNotificationsCollectionRef, notificationData);
+                  const notificationId = notificationRef.id; // Get the auto-generated notificationId
+                  
+                  // Update the notification data with the generated notificationId
+                  await updateDoc(notificationRef, { notificationId });
+                  
     
                 setName("");
                 setAddress("");
