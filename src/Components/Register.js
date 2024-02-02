@@ -22,16 +22,13 @@ const Register = () => {
     
         try {
             setIsLoading(true);
-    
-            // Fetch user document based on the provided email
+
             const userQuery = query(collection(db, "users"), where("email", "==", email));
             const userQuerySnapshot = await getDocs(userQuery);
     
             if (!userQuerySnapshot.empty) {
-                // User found, retrieve the first document
                 const userDocument = userQuerySnapshot.docs[0].data();
-    
-                // Include the profileImage value in the data to be saved to "Requests" collection
+
                 const requestData = {
                     name: name,
                     address: address,
@@ -44,11 +41,10 @@ const Register = () => {
                     uid:userDocument.uid
                 };
     
-                // Save the data to the "Requests" collection
                 await addDoc(usersCollectionRef, requestData);
 
                 const notificationData = {
-                    notificationId: '', // Placeholder for the notificationId
+                    notificationId: '',
                     title: "New Registration",
                     message: `New registration by ${userDocument.name}`,
                     timestamp: new Date(),
@@ -58,9 +54,8 @@ const Register = () => {
                   };
                   
                   const notificationRef = await addDoc(adminNotificationsCollectionRef, notificationData);
-                  const notificationId = notificationRef.id; // Get the auto-generated notificationId
+                  const notificationId = notificationRef.id; 
                   
-                  // Update the notification data with the generated notificationId
                   await updateDoc(notificationRef, { notificationId });
                   
     
@@ -74,7 +69,6 @@ const Register = () => {
                 console.log('Data submitted successfully!');
                 navigate("/");
             } else {
-                // User not found
                 console.error('User not found with the provided email');
             }
         } catch (error) {

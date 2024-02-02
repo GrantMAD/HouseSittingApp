@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { db } from "../firebase";
-import { getDocs, collection, query, where, orderBy, doc, deleteDoc } from "firebase/firestore";
+import { getDocs, collection, query, where, doc, deleteDoc } from "firebase/firestore";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
@@ -34,45 +34,46 @@ const Nav = () => {
   };
 
   const toggleNotification = async () => {
-    // Check if the user is authenticated and has a role
     const auth = getAuth();
     const user = auth.currentUser;
-
+  
     if (user && userRole) {
-      // Fetch user's role from the database
       const userDocRef = collection(db, 'users');
       const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
-
+  
       if (userDocSnap.size > 0) {
         const userData = userDocSnap.docs[0].data();
         const userRole = userData.role || '';
-
+  
         setNotificationOpen(!isNotificationOpen);
-
-        if (userRole === 'Admin') {
-          // Fetch notifications only if user is admin
-          if (!isNotificationOpen) {
-            try {
-              const notificationsRef = collection(db, "adminNotifications");
-              const q = query(notificationsRef, orderBy("timestamp", "desc"));
-              const querySnapshot = await getDocs(q);
-              const notificationsData = [];
-              querySnapshot.forEach((doc) => {
-                notificationsData.push(doc.data());
-              });
-              setNotifications(notificationsData);
-            } catch (error) {
-              console.error("Error fetching notifications:", error);
-            }
+  
+        try {
+          let combinedNotifications = [];
+  
+          // If user has a role of Admin, fetch admin notifications
+          if (userRole === 'Admin') {
+            const adminNotificationsRef = collection(db, "adminNotifications");
+            const adminQuerySnapshot = await getDocs(adminNotificationsRef);
+            combinedNotifications = adminQuerySnapshot.docs.map(doc => doc.data());
           }
-        } else {
-          // If user is not admin, set notifications to an empty array
-          setNotifications([]);
+  
+          // Fetch user's notifications
+          const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
+          const userQuerySnapshot = await getDocs(userNotificationsRef);
+          const userNotificationsData = userQuerySnapshot.docs.map(doc => doc.data());
+  
+          // Combine admin and user notifications
+          combinedNotifications = [...combinedNotifications, ...userNotificationsData];
+  
+          // Update state with combined notifications
+          setNotifications(combinedNotifications);
+        } catch (error) {
+          console.error("Error fetching notifications:", error);
         }
       }
     }
   };
-
+  
 
   useEffect(() => {
     const auth = getAuth();
@@ -168,8 +169,6 @@ const Nav = () => {
       console.error("Error handling notification click:", error);
     }
   };
-  
-  
 
   const deleteNotification = async (notificationId) => {
     try {
@@ -179,9 +178,6 @@ const Nav = () => {
       console.error("Error deleting notification:", error);
     }
   };
-
-
-
 
   return (
     <nav class="fixed w-full bg-white drop-shadow-lg border-b border-blue-700 z-10">

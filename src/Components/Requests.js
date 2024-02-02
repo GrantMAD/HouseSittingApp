@@ -1,6 +1,6 @@
 import { faUser, faMinus, faPlus, faMapMarkerAlt, faPhone, faEnvelope, faUserTie, faComment } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,27 +31,77 @@ const Requests = () => {
     const handleApprove = async () => {
         try {
             setIsLoading(true);
-            
+    
+            // Add the approved user to the ApprovedSitters collection
             const approvedSitterRef = await addDoc(collection(db, 'ApprovedSitters'), {
                 name: selectedRequest.name,
-                uid:selectedRequest.uid,
+                uid: selectedRequest.uid,
                 address: selectedRequest.address,
                 profileImage: selectedRequest.profileImage,
                 memberSince: selectedRequest.memberSince,
                 email: selectedRequest.email
             });
-            toast.success('User has been approved', {
-                position: 'bottom-right',
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-
+    
             // Delete the document in the Requests collection
             await deleteDoc(doc(db, 'Requests', selectedRequest.id));
-
+    
+            // Fetch the user's document using the UID from the selected request
+            const userQuerySnapshot = await getDocs(query(collection(db, 'users'), where("uid", "==", selectedRequest.uid)));
+    
+            if (!userQuerySnapshot.empty) {
+                // There should be only one document with the given UID
+                const userDocSnapshot = userQuerySnapshot.docs[0];
+    
+                // Check if the notifications sub-collection exists
+                const notificationsCollectionRef = collection(userDocSnapshot.ref, 'notifications');
+                const notificationsCollectionSnapshot = await getDocs(notificationsCollectionRef);
+    
+                // If the notifications sub-collection doesn't exist, create it
+                if (notificationsCollectionSnapshot.empty) {
+                    await addDoc(notificationsCollectionRef, {
+                        dummy: 'This is a dummy document to create the notifications sub-collection',
+                    });
+                }
+    
+                // Add a notification to the user's notifications sub-collection with auto-generated ID
+                const notificationRef = await addDoc(notificationsCollectionRef, {
+                    title: 'Registration Approved',
+                    message: 'Your registration to become a house sitter has been approved.',
+                    timestamp: new Date(),
+                    type: 'Approval',
+                    buttonLabel: "->",
+                });
+    
+                // Get the ID of the newly added notification
+                const notificationId = notificationRef.id;
+    
+                // Update the notification document with the ID and any additional data
+                await updateDoc(doc(notificationsCollectionRef, notificationId), {
+                    notificationId, // Store the ID in the document
+                    // Additional data if needed
+                });
+    
+                // Display a success toast notification upon successful approval
+                toast.success('User has been approved and notified', {
+                    position: 'bottom-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
+            } else {
+                console.error('User document not found');
+                toast.error('Error: User document not found', {
+                    position: 'bottom-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
+            }
+    
             // Log the reference to the new ApprovedSitters document
             console.log("Approved Sitter Document Reference:", approvedSitterRef);
         } catch (error) {
