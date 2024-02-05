@@ -48,7 +48,7 @@ const Register = () => {
                     title: "New Registration",
                     message: `New registration by ${userDocument.name}`,
                     timestamp: new Date(),
-                    type: "Admin",
+                    type: "adminNotification",
                     destination: "/Requests",
                     buttonLabel: "View Request",
                   };

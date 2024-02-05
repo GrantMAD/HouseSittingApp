@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, Timestamp, onSnapshot, updateDoc, arrayUnion, getDoc, doc, setDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
@@ -152,21 +152,21 @@ const PublicProfile = () => {
             const currentUserUid = await getCurrentUserUid();
             const currentUserQuery = query(collection(db, 'users'), where('uid', '==', currentUserUid));
             const currentUserSnapshot = await getDocs(currentUserQuery);
-
+    
             if (!currentUserSnapshot.empty) {
                 const currentUserDoc = currentUserSnapshot.docs[0].data();
-
+    
                 // Now, you have the current user's data, including name and profileImage
                 const usersCollectionRef = collection(db, 'users');
                 const userQuery = query(usersCollectionRef, where('uid', '==', userUid));
                 const userQuerySnapshot = await getDocs(userQuery);
-
+    
                 if (!userQuerySnapshot.empty) {
                     const userDoc = userQuerySnapshot.docs[0].ref;
-
+    
                     // Create a sub-collection named "reviews" under the user's document
                     const reviewsCollectionRef = collection(userDoc, 'reviews');
-
+    
                     // Add a document with the review text and user information to the "reviews" sub-collection
                     await addDoc(reviewsCollectionRef, {
                         text: newReview,
@@ -174,16 +174,29 @@ const PublicProfile = () => {
                         reviewerName: currentUserDoc.name,
                         reviewerProfileImage: currentUserDoc.profileImage,
                     });
-
+    
+                    // Add a notification to the user's notifications sub-collection
+                    const notificationsCollectionRef = collection(userDoc, 'notifications');
+                    const notificationRef = doc(notificationsCollectionRef); // Automatically generates a unique ID
+                    await setDoc(notificationRef, {
+                        notificationId: notificationRef.id,
+                        title: 'New Review',
+                        message: `${currentUserDoc.name} has added a new review.`,
+                        timestamp: Timestamp.now(),
+                        type: 'reviewNotification',
+                        buttonLabel: "->",
+                        destination: "/Profile",
+                    });
+    
                     // Clear the input field after submission
                     setNewReview('');
-
+    
                     // Show feedback for 1 second
                     setShowFeedback(true);
                     setTimeout(() => {
                         setShowFeedback(false);
                     }, 1000);
-
+    
                     // Reset stars to no color after 3 seconds
                     setTimeout(() => {
                         setShowFeedback(false); // Hide the feedback in case it's still visible
@@ -199,6 +212,7 @@ const PublicProfile = () => {
             console.error('Error submitting review:', error);
         }
     };
+    
 
     const handleStarHover = (hoveredStars) => {
         setStarsHovered(hoveredStars);

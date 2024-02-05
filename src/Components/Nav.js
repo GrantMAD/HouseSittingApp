@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { db } from "../firebase";
 import { getDocs, collection, query, where, doc, deleteDoc } from "firebase/firestore";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 
 const Nav = () => {
@@ -21,6 +21,43 @@ const Nav = () => {
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
 
+  const AdminNotification = ({ message, notificationId, destination, buttonLabel, handleNotificationClick, title }) => {
+    return (
+      <>
+        <div className="underline mb-2">{title}</div>
+        <div>{message}</div>
+        <button className="bg-blue-700 text-white font-semibold p-2 rounded-md mt-2" onClick={() => handleNotificationClick(notificationId, destination)}>
+          {buttonLabel || "View"}
+        </button>
+      </>
+    );
+  };
+
+  const UserNotification = ({ message, title, notificationId, destination, handleNotificationClick }) => {
+    return (
+      <>
+        <div className="underline mb-2">{title}</div>
+        <div>{message}</div>
+        <button className="bg-green-500 text-white font-semibold p-2 rounded-md mt-2 w-24" onClick={() => handleNotificationClick(notificationId, destination)}>
+          <FontAwesomeIcon icon={faLongArrowAltRight} className="mr-2" />
+        </button>
+      </>
+    );
+  };
+
+  const ReviewNotification = ({ message, title, notificationId, destination, handleNotificationClick }) => {
+    return (
+      <>
+        <div className="underline mb-2">{title}</div>
+        <div>{message}</div>
+        <button className="bg-green-500 text-white font-semibold p-2 rounded-md mt-2 w-24" onClick={() => handleNotificationClick(notificationId, destination)}>
+          <FontAwesomeIcon icon={faLongArrowAltRight} className="mr-2" />
+        </button>
+      </>
+    );
+  };
+
+
   const toggleImageDropdown = () => {
     setImageDropdownOpen(!isImageDropdownOpen);
   };
@@ -36,35 +73,35 @@ const Nav = () => {
   const toggleNotification = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
-  
+
     if (user && userRole) {
       const userDocRef = collection(db, 'users');
       const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
-  
+
       if (userDocSnap.size > 0) {
         const userData = userDocSnap.docs[0].data();
         const userRole = userData.role || '';
-  
+
         setNotificationOpen(!isNotificationOpen);
-  
+
         try {
           let combinedNotifications = [];
-  
+
           // If user has a role of Admin, fetch admin notifications
           if (userRole === 'Admin') {
             const adminNotificationsRef = collection(db, "adminNotifications");
             const adminQuerySnapshot = await getDocs(adminNotificationsRef);
             combinedNotifications = adminQuerySnapshot.docs.map(doc => doc.data());
           }
-  
+
           // Fetch user's notifications
           const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
           const userQuerySnapshot = await getDocs(userNotificationsRef);
           const userNotificationsData = userQuerySnapshot.docs.map(doc => doc.data());
-  
+
           // Combine admin and user notifications
           combinedNotifications = [...combinedNotifications, ...userNotificationsData];
-  
+
           // Update state with combined notifications
           setNotifications(combinedNotifications);
         } catch (error) {
@@ -73,7 +110,7 @@ const Nav = () => {
       }
     }
   };
-  
+
 
   useEffect(() => {
     const auth = getAuth();
@@ -139,14 +176,22 @@ const Nav = () => {
           if (userDocSnap.size > 0) {
             const userData = userDocSnap.docs[0].data();
             const userRole = userData.role || '';
+            let count = 0;
 
-            // Fetch notification count only if user is admin
+            // Fetch notification count from adminNotifications if user is admin
             if (userRole === 'Admin') {
-              const notificationsRef = collection(db, "adminNotifications");
-              const querySnapshot = await getDocs(notificationsRef);
-              const count = querySnapshot.size;
-              setNotificationCount(count);
+              const adminNotificationsRef = collection(db, "adminNotifications");
+              const adminQuerySnapshot = await getDocs(adminNotificationsRef);
+              count += adminQuerySnapshot.size;
             }
+
+            // Fetch notification count from user's notifications sub-collection
+            const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
+            const userNotificationsSnapshot = await getDocs(userNotificationsRef);
+            count += userNotificationsSnapshot.size;
+
+            // Update notification count state
+            setNotificationCount(count);
           }
         }
       } catch (error) {
@@ -157,12 +202,13 @@ const Nav = () => {
     fetchNotificationCount();
   }, [userRole]);
 
+
   const handleNotificationClick = async (notificationId, destination) => {
     try {
       navigate(destination);
-  
+
       await deleteNotification(notificationId);
-  
+
       setNotifications(prevNotifications => prevNotifications.filter(notification => notification.notificationId !== notificationId));
       setNotificationCount(prevCount => prevCount - 1);
     } catch (error) {
@@ -178,6 +224,37 @@ const Nav = () => {
       console.error("Error deleting notification:", error);
     }
   };
+
+  const deleteUserNotification = async (notificationId) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDocRef = collection(db, 'users');
+      const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
+      if (userDocSnap.size === 0) return;
+
+      const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
+      await deleteDoc(doc(userNotificationsRef, notificationId));
+
+      // Optionally, you can also update the local state to reflect the deletion
+      setNotifications(prevNotifications => prevNotifications.filter(notification => notification.notificationId !== notificationId));
+      setNotificationCount(prevCount => prevCount - 1);
+    } catch (error) {
+      console.error("Error deleting user notification:", error);
+    }
+  };
+
+  const handleUserNotificationClick = async (notificationId) => {
+    try {
+      await deleteUserNotification(notificationId);
+    } catch (error) {
+      console.error("Error handling user notification click:", error);
+    }
+  };
+
+
 
   return (
     <nav class="fixed w-full bg-white drop-shadow-lg border-b border-blue-700 z-10">
@@ -231,20 +308,41 @@ const Nav = () => {
                 )}
                 {isNotificationOpen && (
                   <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-700 pt-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-start" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
-                    <h1 className='text-white font-semibold mb-1 pl-4'>Notificaitons</h1>
-                    {notifications.length > 0 ? (
-                      notifications.map((notification, index) => (
-                        <div key={index} className="px-4 py-2 text-sm text-white border-t border-white flex flex-col justify-between items-center">
-                          <span>{notification.message}</span>
-                          <button className="bg-blue-700 text-white font-semibold p-2 rounded-md mt-2" onClick={() => handleNotificationClick(notification.notificationId, notification.destination)}>
-                            {notification.buttonLabel || "View"}
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="px-4 py-2 text-sm text-white">No notifications</div>
-                    )}
-
+                    <h1 className='text-white font-semibold mb-1 pl-4'>Notifications</h1>
+                    {notifications.map((notification, index) => (
+                      <div key={index} className="px-4 py-2 text-sm text-white border-t border-white flex flex-col justify-between items-center">
+                        {notification.type === 'adminNotification' ? (
+                          <AdminNotification
+                            title={notification.title}
+                            message={notification.message}
+                            notificationId={notification.notificationId}
+                            destination={notification.destination}
+                            buttonLabel={notification.buttonLabel}
+                            handleNotificationClick={handleNotificationClick}
+                          />
+                        ) : notification.type === 'userNotification' ? (
+                          <UserNotification
+                            title={notification.title}
+                            message={notification.message}
+                            notificationId={notification.notificationId}
+                            destination={notification.destination}
+                            buttonLabel={notification.buttonLabel}
+                            handleNotificationClick={handleUserNotificationClick}
+                          />
+                        ) : notification.type === 'reviewNotification' ? (
+                          <ReviewNotification
+                            title={notification.title}
+                            message={notification.message}
+                            notificationId={notification.notificationId}
+                            destination={notification.destination}
+                            buttonLabel={notification.buttonLabel}
+                            handleNotificationClick={handleUserNotificationClick}
+                          />
+                        ) : (
+                          <span>Unknown notification type</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
