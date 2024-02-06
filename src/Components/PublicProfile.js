@@ -395,7 +395,6 @@ const PublicProfile = () => {
                             )}
                         </div>
                         <div className="mt-3 flex flex-col justify-center">
-
                             <div className="p-4 md:p-8 lg:p-16 lg:pt-6">
                                 <div className="mt-3 flex flex-col justify-center">
                                     <div className="mt-3 flex flex-col text-center">
@@ -442,7 +441,6 @@ const PublicProfile = () => {
                             </div>
 
                         </div>
-
                     </div>
                 </div>
             ) : (

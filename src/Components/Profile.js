@@ -6,12 +6,13 @@ import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/fire
 import { deleteUser } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
+import { faMobile, faEnvelope, faCalendar, faVenusMars, faClock, faIdCard } from '@fortawesome/free-solid-svg-icons';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 
 const Profile = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [user, setUser] = useState()
   const [showTooltip, setShowTooltip] = useState(false);
   const location = useLocation();
@@ -24,19 +25,29 @@ const Profile = () => {
   }, [])
 
   useEffect(() => {
-    const getUsers = async () => {
+    const fetchData = async () => {
       try {
-        const usersCollectionRef = collection(db, 'users')
-        const userQuery = query(usersCollectionRef, where("email", "==", user.email))
-        const data = await getDocs(userQuery)
-        setUsers(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-      } catch (e) {
-        console.log(e)
+        // Fetch user's basic information
+        const usersCollectionRef = collection(db, 'users');
+        const userQuery = query(usersCollectionRef, where("email", "==", user.email));
+        const userData = await getDocs(userQuery);
+        setUsers(userData.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+
+        // Fetch user's reviews data
+        if (!userData.empty) {
+          const userDoc = userData.docs[0];
+          const reviewsCollectionRef = collection(userDoc.ref, 'reviews');
+          const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+          const reviewsData = reviewsSnapshot.docs.map((doc) => doc.data());
+          setReviews(reviewsData);
+        }
+      } catch (error) {
+        console.log(error);
       }
     };
 
-    getUsers();
-  }, [user])
+    fetchData();
+  }, [user]);
 
   const editProfile = () => {
     navigate('/ProfileForm');
@@ -69,7 +80,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 md:grid-cols-3">
               <div className="grid grid-cols-3 text-center order-last md:order-first mt-20 md:mt-0 pl-32">
                 <div className="relative">
-                  
+
                 </div>
               </div>
               <div className="relative">
@@ -123,12 +134,12 @@ const Profile = () => {
                       <div className="mt-5">
                         <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Contact information</h1>
                         {user.number && (
-                        <div>
-                          <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
-                            <FontAwesomeIcon icon={faMobile} className="text-blue-600 mr-3" />
-                            Cell Number:</h1>
-                          <p className="text-gray-800">{user.number}</p>
-                        </div>
+                          <div>
+                            <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
+                              <FontAwesomeIcon icon={faMobile} className="text-blue-600 mr-3" />
+                              Cell Number:</h1>
+                            <p className="text-gray-800">{user.number}</p>
+                          </div>
                         )}
                         <div>
                           <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
@@ -140,20 +151,20 @@ const Profile = () => {
                       <div className="mt-5">
                         <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Personal information</h1>
                         {user.dateOfBirth && (
-                        <div>
-                          <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
-                            <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
-                            Date of birth:</h1>
-                          <p className="text-gray-800">{user.dateOfBirth || "None"}</p>
-                        </div>
+                          <div>
+                            <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
+                              <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
+                              Date of birth:</h1>
+                            <p className="text-gray-800">{user.dateOfBirth || "None"}</p>
+                          </div>
                         )}
                         {user.gender && (
-                        <div>
-                          <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
-                            <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
-                            Gender:</h1>
-                          <p className="text-gray-800">{user.gender || "None"}</p>
-                        </div>
+                          <div>
+                            <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
+                              <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
+                              Gender:</h1>
+                            <p className="text-gray-800">{user.gender || "None"}</p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -203,6 +214,32 @@ const Profile = () => {
                 <p className="text-gray-800 lg:px-16">{user.about || "None"}</p>
               </div>
             </div>
+            <div className="mt-5">
+              <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-3">Your Reviews</h1>
+              <div className='mt-5'>
+                {reviews.length === 0 ? (
+                  <p className="text-center text-gray-500">User currently has no reviews</p>
+                ) : (
+                  reviews.map((review, index) => (
+                    <div key={index} className='flex flex-col items-center justify-center mb-3'>
+                      <div className='flex justify-center items-center mb-3'>
+                        <img
+                          src={review.reviewerProfileImage}
+                          alt=""
+                          className='rounded-full h-8 w-8 mr-2'
+                        />
+                        <h1 className="font-semibold">{review.reviewerName}</h1>
+                      </div>
+                      <p className="mb-3">{review.text}</p>
+                      <p className="text-gray-500 ml-2">
+                        Posted on {new Date(review.timestamp.toMillis()).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
           </div>
         })}
       </div>
