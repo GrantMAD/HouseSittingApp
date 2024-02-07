@@ -1,15 +1,44 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../index.css";
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const [isUserAuthenticated, setUserAuthenticated] = useState(false);
+    const [showSignInMessage, setShowSignInMessage] = useState(false);
+    const [clickedButton, setClickedButton] = useState(null);
+
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUserAuthenticated(!!user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const RegisterNavigation = () => {
-        navigate("/Register");
+        if (isUserAuthenticated) {
+            navigate("/Register");
+        } else {
+            setShowSignInMessage(true);
+            setClickedButton("register");
+            setTimeout(() => {
+                navigate("/SignIn");
+            }, 2000); // Adjust the delay time as needed (in milliseconds)
+        }
     }
 
     const SittersNavigation = () => {
-        navigate("/Sitters");
+        if (isUserAuthenticated) {
+            navigate("/Sitters");
+        } else {
+            setShowSignInMessage(true);
+            setClickedButton("sitters");
+            setTimeout(() => {
+                navigate("/SignIn");
+            }, 2000); // Adjust the delay time as needed (in milliseconds)
+        }
     }
 
     const ContactNavigation = () => {
@@ -41,6 +70,7 @@ const LandingPage = () => {
                         >
                             Register
                         </button>
+                        {showSignInMessage && clickedButton === "register" && <p className="text-red-600 mt-3 font-semibold">You must be signed in. Please wait...</p>}
                     </div>
                 </div>
                 <div className="w-1/2 pb-20 pt-20">
@@ -55,6 +85,7 @@ const LandingPage = () => {
                         >
                             Find sitter
                         </button>
+                        {showSignInMessage && clickedButton === "sitters" && <p className="text-red-600 mt-3 font-semibold">You must be signed in. Please wait...</p>}
                     </div>
                 </div>
             </div>

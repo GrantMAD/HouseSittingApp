@@ -148,25 +148,27 @@ const Profile = () => {
                           <p className="text-gray-800">{user.email}</p>
                         </div>
                       </div>
-                      <div className="mt-5">
-                        <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Personal information</h1>
-                        {user.dateOfBirth && (
-                          <div>
-                            <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
-                              <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
-                              Date of birth:</h1>
-                            <p className="text-gray-800">{user.dateOfBirth || "None"}</p>
-                          </div>
-                        )}
-                        {user.gender && (
-                          <div>
-                            <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
-                              <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
-                              Gender:</h1>
-                            <p className="text-gray-800">{user.gender || "None"}</p>
-                          </div>
-                        )}
-                      </div>
+                      {user.gender || user.dateOfBirth ? (
+                        <div className="mt-5">
+                          <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Personal information</h1>
+                          {user.dateOfBirth && (
+                            <div>
+                              <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
+                                <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
+                                Date of birth:</h1>
+                              <p className="text-gray-800">{user.dateOfBirth || "None"}</p>
+                            </div>
+                          )}
+                          {user.gender && (
+                            <div>
+                              <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
+                                <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
+                                Gender:</h1>
+                              <p className="text-gray-800">{user.gender || "None"}</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="ml-20">
                       <div className="mt-5">
@@ -185,27 +187,29 @@ const Profile = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="ml-20 mt-5">
-                      <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Social Media</h1>
-                      {Object.entries(user.socialMediaLinks).map(([platform, link]) => (
-                        <div key={platform} className="flex items-center mt-2">
-                          <FontAwesomeIcon
-                            icon={socialMediaIcons[platform]}
-                            className="text-blue-600 mr-2"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => window.open(link, '_blank')}
-                          />
-                          <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-800 hover:underline"
-                          >
-                            {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
+                    {Object.keys(user.socialMediaLinks).length > 0 && (
+                      <div className="ml-20 mt-5">
+                        <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Social Media</h1>
+                        {Object.entries(user.socialMediaLinks).map(([platform, link]) => (
+                          <div key={platform} className="flex items-center mt-2">
+                            <FontAwesomeIcon
+                              icon={socialMediaIcons[platform]}
+                              className="text-blue-600 mr-2"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => window.open(link, '_blank')}
+                            />
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-800 hover:underline"
+                            >
+                              {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

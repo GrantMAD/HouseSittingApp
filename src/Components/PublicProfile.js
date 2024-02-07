@@ -152,21 +152,21 @@ const PublicProfile = () => {
             const currentUserUid = await getCurrentUserUid();
             const currentUserQuery = query(collection(db, 'users'), where('uid', '==', currentUserUid));
             const currentUserSnapshot = await getDocs(currentUserQuery);
-    
+
             if (!currentUserSnapshot.empty) {
                 const currentUserDoc = currentUserSnapshot.docs[0].data();
-    
+
                 // Now, you have the current user's data, including name and profileImage
                 const usersCollectionRef = collection(db, 'users');
                 const userQuery = query(usersCollectionRef, where('uid', '==', userUid));
                 const userQuerySnapshot = await getDocs(userQuery);
-    
+
                 if (!userQuerySnapshot.empty) {
                     const userDoc = userQuerySnapshot.docs[0].ref;
-    
+
                     // Create a sub-collection named "reviews" under the user's document
                     const reviewsCollectionRef = collection(userDoc, 'reviews');
-    
+
                     // Add a document with the review text and user information to the "reviews" sub-collection
                     await addDoc(reviewsCollectionRef, {
                         text: newReview,
@@ -174,7 +174,7 @@ const PublicProfile = () => {
                         reviewerName: currentUserDoc.name,
                         reviewerProfileImage: currentUserDoc.profileImage,
                     });
-    
+
                     // Add a notification to the user's notifications sub-collection
                     const notificationsCollectionRef = collection(userDoc, 'notifications');
                     const notificationRef = doc(notificationsCollectionRef); // Automatically generates a unique ID
@@ -187,16 +187,16 @@ const PublicProfile = () => {
                         buttonLabel: "->",
                         destination: "/Profile",
                     });
-    
+
                     // Clear the input field after submission
                     setNewReview('');
-    
+
                     // Show feedback for 1 second
                     setShowFeedback(true);
                     setTimeout(() => {
                         setShowFeedback(false);
                     }, 1000);
-    
+
                     // Reset stars to no color after 3 seconds
                     setTimeout(() => {
                         setShowFeedback(false); // Hide the feedback in case it's still visible
@@ -212,7 +212,7 @@ const PublicProfile = () => {
             console.error('Error submitting review:', error);
         }
     };
-    
+
 
     const handleStarHover = (hoveredStars) => {
         setStarsHovered(hoveredStars);
@@ -288,11 +288,6 @@ const PublicProfile = () => {
                                 >
                                     Back to find sitters
                                 </button>
-                                <button
-                                    class="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
-                                >
-                                    Message User
-                                </button>
                             </div>
                         </div>
 
@@ -320,25 +315,27 @@ const PublicProfile = () => {
                                                     <p className="text-gray-800">{userData.email}</p>
                                                 </div>
                                             </div>
-                                            <div className="mt-5">
-                                                <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Personal information</h1>
-                                                {userData.dateOfBirth && (
-                                                    <div>
-                                                        <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
-                                                            <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
-                                                            Date of birth:</h1>
-                                                        <p className="text-gray-800">{userData.dateOfBirth}</p>
-                                                    </div>
-                                                )}
-                                                {userData.gender && (
-                                                    <div>
-                                                        <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
-                                                            <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
-                                                            Gender:</h1>
-                                                        <p className="text-gray-800">{userData.gender}</p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {userData.gender || userData.dateOfBirth ? (
+                                                <div className="mt-5">
+                                                    <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Personal information</h1>
+                                                    {userData.dateOfBirth && (
+                                                        <div>
+                                                            <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
+                                                                <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
+                                                                Date of birth:</h1>
+                                                            <p className="text-gray-800">{userData.dateOfBirth}</p>
+                                                        </div>
+                                                    )}
+                                                    {userData.gender && (
+                                                        <div>
+                                                            <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
+                                                                <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
+                                                                Gender:</h1>
+                                                            <p className="text-gray-800">{userData.gender}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : null}
                                         </div>
                                         <div className="ml-20">
                                             <div className="mt-5">
@@ -350,12 +347,12 @@ const PublicProfile = () => {
                                                     <p className="text-gray-800">{userData.memberSince}</p>
                                                 </div>
                                                 {userData.userId && (
-                                                <div>
-                                                    <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
-                                                        <FontAwesomeIcon icon={faIdCard} className="text-blue-600 mr-3" />
-                                                        User Id:</h1>
-                                                    <p className="text-gray-800">{userData.userId}</p>
-                                                </div>
+                                                    <div>
+                                                        <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
+                                                            <FontAwesomeIcon icon={faIdCard} className="text-blue-600 mr-3" />
+                                                            User Id:</h1>
+                                                        <p className="text-gray-800">{userData.userId}</p>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -388,10 +385,10 @@ const PublicProfile = () => {
                                 </div>
                             </div>
                             {userData.about && (
-                            <div className="mt-3 flex flex-col text-center">
-                                <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-5">About Me</h1>
-                                <p className="text-gray-800 lg:px-16">{userData.about}</p>
-                            </div>
+                                <div className="mt-3 flex flex-col text-center">
+                                    <h1 className="font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-blue-700 text-center mb-5">About Me</h1>
+                                    <p className="text-gray-800 lg:px-16">{userData.about}</p>
+                                </div>
                             )}
                         </div>
                         <div className="mt-3 flex flex-col justify-center">

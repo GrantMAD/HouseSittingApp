@@ -291,76 +291,79 @@ const Nav = () => {
                   <a href="/" class="text-black hover:bg-blue-600 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Home</a>
                   <a href="/AboutUs" class="text-black hover:bg-blue-600 hover:text-white rounded-md px-3 py-2 text-sm font-medium">About us</a>
                   <a href="/ContactUs" class="text-black hover:bg-blue-600 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Contact us</a>
-                  <a href="/Sitters" class="text-white bg-blue-600 hover:bg-white hover:border-2 border-blue-600 hover:text-blue-600 rounded-md px-3 py-2 text-sm font-medium">Find a sitter</a>
+                  {isUserAuthenticated && (
+                    <a href="/Sitters" class="text-white bg-blue-600 hover:bg-white hover:border-2 border-blue-600 hover:text-blue-600 rounded-md px-3 py-2 text-sm font-medium">Find a sitter</a>
+                  )}
                 </div>
               </div>
             </div>
 
             <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-              <div className="relative">
-                <FontAwesomeIcon
-                  icon={faBell}
-                  className="text-gray-600 hidden sm:block cursor-pointer"
-                  onClick={toggleNotification}
-                />
-                {notificationCount > 0 && (
-                  <span className="absolute hidden sm:block animate-pulse top-0 right-0 transform translate-x-1/2 -translate-y-1/2 lg:flex items-center justify-center lg:h-4 lg:w-4 h-3 w-3 rounded-full bg-red-500 text-white text-xs">{notificationCount}</span>
-                )}
-                {isNotificationOpen && (
-                  <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-700 pt-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-start" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
-                    <h1 className='text-white font-semibold mb-1 pl-4'>Notifications</h1>
-                    {notifications.map((notification, index) => (
-                      <div key={index} className="px-4 py-2 text-sm text-white border-t border-white flex flex-col justify-between items-center">
-                        {notification.type === 'adminNotification' ? (
-                          <AdminNotification
-                            title={notification.title}
-                            message={notification.message}
-                            notificationId={notification.notificationId}
-                            destination={notification.destination}
-                            buttonLabel={notification.buttonLabel}
-                            handleNotificationClick={handleNotificationClick}
-                          />
-                        ) : notification.type === 'userNotification' ? (
-                          <UserNotification
-                            title={notification.title}
-                            message={notification.message}
-                            notificationId={notification.notificationId}
-                            destination={notification.destination}
-                            buttonLabel={notification.buttonLabel}
-                            handleNotificationClick={handleUserNotificationClick}
-                          />
-                        ) : notification.type === 'reviewNotification' ? (
-                          <ReviewNotification
-                            title={notification.title}
-                            message={notification.message}
-                            notificationId={notification.notificationId}
-                            destination={notification.destination}
-                            buttonLabel={notification.buttonLabel}
-                            handleNotificationClick={handleUserNotificationClick}
-                          />
-                        ) : (
-                          <span>Unknown notification type</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                className="hidden relative rounded-full p-1 text-gray-800 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                onClick={toggleImageDropdown}
-              >
-                <span className="absolute -inset-1.5"></span>
-                <span className="sr-only">View notifications</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                </svg>
-              </button>
-
               <div>
                 {isUserAuthenticated ? (
-                  <div className="relative ml-3">
+                  <div className="flex relative ml-3">
+                    <div className="flex items-center mr-3">
+                      <div className="relative">
+                        <FontAwesomeIcon
+                          icon={faBell}
+                          className="text-gray-600 hidden sm:block cursor-pointer"
+                          onClick={toggleNotification}
+                        />
+                        {notificationCount > 0 && (
+                          <span className="absolute hidden sm:block animate-pulse top-0 right-0 transform translate-x-1/2 -translate-y-1/2 lg:flex items-center justify-center lg:h-4 lg:w-4 h-3 w-3 rounded-full bg-red-500 text-white text-xs">{notificationCount}</span>
+                        )}
+                        {isNotificationOpen && (
+                          <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-700 pt-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-start" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabIndex="-1">
+                            <h1 className='text-white font-semibold mb-1 pl-4'>Notifications</h1>
+                            {notifications.map((notification, index) => (
+                              <div key={index} className="px-4 py-2 text-sm text-white border-t border-white flex flex-col justify-between items-center">
+                                {notification.type === 'adminNotification' ? (
+                                  <AdminNotification
+                                    title={notification.title}
+                                    message={notification.message}
+                                    notificationId={notification.notificationId}
+                                    destination={notification.destination}
+                                    buttonLabel={notification.buttonLabel}
+                                    handleNotificationClick={handleNotificationClick}
+                                  />
+                                ) : notification.type === 'userNotification' ? (
+                                  <UserNotification
+                                    title={notification.title}
+                                    message={notification.message}
+                                    notificationId={notification.notificationId}
+                                    destination={notification.destination}
+                                    buttonLabel={notification.buttonLabel}
+                                    handleNotificationClick={handleUserNotificationClick}
+                                  />
+                                ) : notification.type === 'reviewNotification' ? (
+                                  <ReviewNotification
+                                    title={notification.title}
+                                    message={notification.message}
+                                    notificationId={notification.notificationId}
+                                    destination={notification.destination}
+                                    buttonLabel={notification.buttonLabel}
+                                    handleNotificationClick={handleUserNotificationClick}
+                                  />
+                                ) : (
+                                  <span>Unknown notification type</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="hidden relative rounded-full p-1 text-gray-800 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                        onClick={toggleImageDropdown}
+                      >
+                        <span className="absolute -inset-1.5"></span>
+                        <span className="sr-only">View notifications</span>
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        </svg>
+                      </button>
+                    </div>
                     <div>
                       <button
                         type="button"
