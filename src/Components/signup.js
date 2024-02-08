@@ -1,7 +1,7 @@
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, setDoc } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
@@ -28,7 +28,8 @@ const Signup = (props) => {
             const formattedDate = currentDate.toDateString();
             const hashedName = SHA256(userName).toString();
             const generatedUserId = hashedName.slice(0, 10);
-
+    
+            // Add user document
             await addDoc(usersCollectionRef, {
                 name: userName,
                 email: userEmail,
@@ -43,7 +44,28 @@ const Signup = (props) => {
                 socialMediaLinks: {},
                 role: "User",
             });
-
+    
+            // Find the user document using their UID
+            const userQuerySnapshot = await getDocs(query(usersCollectionRef, where('uid', '==', user.uid)));
+    
+            // If the user document exists, add the notification to its sub-collection
+            if (!userQuerySnapshot.empty) {
+                const userDocRef = userQuerySnapshot.docs[0].ref;
+                const userNotificationsRef = collection(userDocRef, 'notifications');
+                
+                // Add a notification with auto-generated notificationId
+                const notificationRef = doc(userNotificationsRef); // Automatically generates a unique ID
+                await setDoc(notificationRef, {
+                    notificationId: notificationRef.id, // Assign auto-generated ID as notificationId
+                    title: "Welcome to HouseSittingApp!",
+                    message: "Thank you for signing up. We hope you have a great experience!",
+                    type: "welcomeNotification",
+                    createdAt: new Date(),
+                });
+            } else {
+                console.error("User document not found");
+            }
+    
             navigate('/SignIn');
         } catch (error) {
             console.error("Error creating user:", error);
@@ -51,6 +73,8 @@ const Signup = (props) => {
             setIsLoading(false);
         }
     }
+    
+    
     useEffect(() => {
         if (props.funcNav) {
             props.funcNav(false)

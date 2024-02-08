@@ -57,6 +57,18 @@ const Nav = () => {
     );
   };
 
+  const WelcomeNotification = ({ message, title, notificationId, destination, handleNotificationClick }) => {
+    return (
+      <div className="text-center">
+        <div className="underline mb-2">{title}</div>
+        <div>{message}</div>
+        <button className="bg-green-500 text-white font-semibold p-2 rounded-md mt-2 w-24" onClick={() => handleNotificationClick(notificationId, destination)}>
+          <FontAwesomeIcon icon={faLongArrowAltRight} className="mr-2" />
+        </button>
+      </div>
+    );
+  };
+
 
   const toggleImageDropdown = () => {
     setImageDropdownOpen(!isImageDropdownOpen);
@@ -73,35 +85,34 @@ const Nav = () => {
   const toggleNotification = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
-
+  
     if (user && userRole) {
       const userDocRef = collection(db, 'users');
       const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
-
+  
       if (userDocSnap.size > 0) {
         const userData = userDocSnap.docs[0].data();
         const userRole = userData.role || '';
-
+  
         setNotificationOpen(!isNotificationOpen);
-
+  
         try {
           let combinedNotifications = [];
-
+  
           // If user has a role of Admin, fetch admin notifications
           if (userRole === 'Admin') {
             const adminNotificationsRef = collection(db, "adminNotifications");
             const adminQuerySnapshot = await getDocs(adminNotificationsRef);
             combinedNotifications = adminQuerySnapshot.docs.map(doc => doc.data());
           }
-
-          // Fetch user's notifications
+  
+          // Fetch user's notifications, including the welcome notification
           const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
           const userQuerySnapshot = await getDocs(userNotificationsRef);
           const userNotificationsData = userQuerySnapshot.docs.map(doc => doc.data());
-
-          // Combine admin and user notifications
+  
           combinedNotifications = [...combinedNotifications, ...userNotificationsData];
-
+  
           // Update state with combined notifications
           setNotifications(combinedNotifications);
         } catch (error) {
@@ -110,6 +121,7 @@ const Nav = () => {
       }
     }
   };
+  
 
 
   useEffect(() => {
@@ -206,10 +218,16 @@ const Nav = () => {
   const handleNotificationClick = async (notificationId, destination) => {
     try {
       navigate(destination);
-
+  
+      // Delete the notification from the sub-collection
       await deleteNotification(notificationId);
-
-      setNotifications(prevNotifications => prevNotifications.filter(notification => notification.notificationId !== notificationId));
+  
+      // Update the local state to remove the deleted notification
+      setNotifications(prevNotifications =>
+        prevNotifications.filter(notification => notification.notificationId !== notificationId)
+      );
+  
+      // Update the notification count
       setNotificationCount(prevCount => prevCount - 1);
     } catch (error) {
       console.error("Error handling notification click:", error);
@@ -218,8 +236,16 @@ const Nav = () => {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const notificationsRef = collection(db, "adminNotifications");
-      await deleteDoc(doc(notificationsRef, notificationId));
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+  
+      const userDocRef = collection(db, 'users');
+      const userDocSnap = await getDocs(query(userDocRef, where('email', '==', user.email)));
+      if (userDocSnap.size === 0) return;
+  
+      const userNotificationsRef = collection(userDocSnap.docs[0].ref, 'notifications');
+      await deleteDoc(doc(userNotificationsRef, notificationId));
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
@@ -344,9 +370,19 @@ const Nav = () => {
                                     buttonLabel={notification.buttonLabel}
                                     handleNotificationClick={handleUserNotificationClick}
                                   />
-                                ) : (
-                                  <span>Unknown notification type</span>
-                                )}
+                                ) : notification.type === 'welcomeNotification' ? (
+                                  <WelcomeNotification
+                                    title={notification.title}
+                                    message={notification.message}
+                                    notificationId={notification.notificationId}
+                                    destination={notification.destination}
+                                    buttonLabel={notification.buttonLabel}
+                                    handleNotificationClick={handleNotificationClick}
+                                  />
+                                )
+                                  : (
+                                    <span>Unknown notification type</span>
+                                  )}
                               </div>
                             ))}
                           </div>
