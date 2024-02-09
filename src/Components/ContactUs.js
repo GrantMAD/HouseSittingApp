@@ -15,10 +15,10 @@ const ContactUs = () => {
     return (
         <div
             ref={contactUsRef}
-            class="min-h-screen bg-blue-400 py-6 flex flex-col justify-center sm:py-12 z-0">
-            <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+            class="min-h-screen bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 py-6 flex flex-col justify-center sm:py-12 z-0">
+            <div class="relative py-3 mt-10 sm:max-w-xl sm:mx-auto">
                 <div
-                    class="absolute inset-0 bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
+                    class="absolute inset-0 bg-blue-700 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
                 </div>
                 <div class="text-white relative px-4 py-10 bg-blue-500 shadow-lg sm:rounded-3xl sm:p-20">
 
@@ -56,7 +56,7 @@ const ContactUs = () => {
 
                     </form>
                     <div className="mt-2">
-                        <h1>Would you rather email us directly? <button className="text-blue-700 font-bold hover:scale-110" onClick={handleContactUsClick}>Click here</button></h1>
+                        <h1>Would you rather email us directly? <button className="text-blue-800 font-bold hover:scale-110" onClick={handleContactUsClick}>Click here</button></h1>
                     </div>
                 </div>
             </div>
