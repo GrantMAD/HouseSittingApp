@@ -126,7 +126,7 @@ const Requests = () => {
             <div className="flex justify-center">
                 <h1 className="text-3xl md:text-4xl text-black font-semibold underline underline-offset-8 decoration-2 decoration-blue-700">Requests</h1>
             </div>
-            <div className="mt-5">
+            <div className="mt-5 md:mx-3">
                 <h1>This is where requests for registration to become a house sitter are posted. Review the users data and either approve the user to become a house sitter by clicking on the approve button or decline the user by clicking on the decline button.</h1>
             </div>
             <div className="mt-5 mb-10">

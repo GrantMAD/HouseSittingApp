@@ -342,7 +342,7 @@ const Nav = () => {
               <a href="/">
                 <div class="flex flex-shrink-0 items-center">
                   <img class="h-8 w-auto mr-3 hover:scale-125" src="/images/Landingpageimage.png" alt="" />
-                  <h1 className="text-blue-600 text-2xl font-semibold font-mono tracking-wide">HouseSittingApp</h1>
+                  <h1 className="text-blue-600 text-2xl font-semibold font-mono tracking-wide lg:block md:hidden hidden">HouseSittingApp</h1>
                 </div>
               </a>
               <div class="hidden sm:ml-6 sm:block">

@@ -86,10 +86,10 @@ const Register = () => {
     return (
         <div
             ref={contactUsRef}
-            className="min-h-screen pt-32 bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700">
-            <div className="flex text-start justify-center pt-10">
-                <div className="w-3/4 border border-black rounded-md">
-                    <div className="mt-5 md:col-span-2 md:mt-0">
+            className="min-h-screen pt-32 lg:px-48 bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700">
+            <div className="flex text-start justify-center pt-10 pb-10">
+                <div className="w-3/4 lg:w-auto border border-black rounded-md">
+                    <div className="md:col-span-2 md:mt-0">
                         <form action="#">
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-md">
                                 <div className="text-center text-3xl font-semibold pt-8 underline underline-offset-4 decoration-blue-700">
@@ -101,8 +101,8 @@ const Register = () => {
                                 <div className="space-y-6 px-4 py-5 sm:p-8 sm:pt-0">
                                     <div className="bg-white">
                                         <div className="flex flex-col">
-                                            <div className="flex">
-                                                <div className="w-1/2 mb-3 mr-5">
+                                            <div className="flex flex-col lg:flex-row">
+                                                <div className="w-full lg:w-1/2 mb-3 lg:mr-5">
                                                     <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 after:content-none">
                                                         Name
                                                     </label>
@@ -115,7 +115,7 @@ const Register = () => {
                                                         onChange={(e) => setName(e.target.value)}
                                                     />
                                                 </div>
-                                                <div className="w-1/2 mb-3">
+                                                <div className="w-full lg:w-1/2 mb-3">
                                                     <label htmlFor="Address" className="block text-sm font-medium text-gray-700 after:content-none">
                                                         Address
                                                     </label>
@@ -128,8 +128,8 @@ const Register = () => {
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="flex">
-                                                <div className="w-1/2 mb-3 mr-5">
+                                            <div className="flex flex-col lg:flex-row">
+                                                <div className="w-full lg:w-1/2 mb-3 lg:mr-5">
                                                     <label htmlFor="number" className="block text-sm font-medium text-gray-700 after:content-none">
                                                         Contact Number
                                                     </label>
@@ -142,7 +142,7 @@ const Register = () => {
                                                         onChange={(e) => setContactNumber(e.target.value)}
                                                     />
                                                 </div>
-                                                <div className="w-1/2 mb-3">
+                                                <div className="w-full lg:w-1/2 mb-3">
                                                     <label htmlFor="number" className="block text-sm font-medium text-gray-700 after:content-none">
                                                         Email
                                                     </label>
@@ -156,7 +156,7 @@ const Register = () => {
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="w-1/2 mb-3">
+                                            <div className="w-full mb-3">
                                                 <label htmlFor="about" className="block text-sm font-medium text-gray-700 after:content-none">
                                                     Experiance
                                                 </label>
@@ -175,7 +175,7 @@ const Register = () => {
                                                     Brief summary about your experiance house sitting
                                                 </p>
                                             </div>
-                                            <div className="w-1/2 mb-3">
+                                            <div className="w-full mb-3">
                                                 <label htmlFor="about" className="block text-sm font-medium text-gray-700 after:content-none">
                                                     Reason for applying
                                                 </label>
@@ -197,7 +197,7 @@ const Register = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
+                                <div className="bg-gray-50 px-4 py-3 lg:text-right md:text-right text-center sm:px-6">
                                     {isLoading ? (
                                         <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                                     ) : (

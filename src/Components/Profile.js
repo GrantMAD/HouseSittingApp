@@ -70,7 +70,7 @@ const Profile = () => {
   };
 
   return (
-    <main className="min-h-screen p-4 md:p-8 lg:p-10  mx-auto bg-zinc-200">
+    <div className="min-h-screen p-4 md:p-8 lg:p-10  mx-auto bg-zinc-200">
       <div className="p-4 md:p-8 lg:p-16">
         {users.map((user) => {
           return <div
@@ -126,25 +126,27 @@ const Profile = () => {
 
             <div className="lg:mt-20 border-b pb-10 md:mt-16">
               <h1 className="text-4xl font-medium text-gray-800 underline underline-offset-3">{user.name}</h1>
-              <div className="flex px-32">
-                <div className="text-start">
+              <div className="flex flex-col lg:px-32">
+                <div className="lg:text-start">
                   <h1 className="text-2xl font-semibold underline underline-offset-4 decoration-blue-700 mt-3">User information</h1>
-                  <div className="flex">
-                    <div>
+                  <div className="flex flex-col lg:flex-row">
+                    <div> 
                       <div className="mt-5">
                         <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Contact information</h1>
                         {user.number && (
                           <div>
                             <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
                               <FontAwesomeIcon icon={faMobile} className="text-blue-600 mr-3" />
-                              Cell Number:</h1>
+                              Cell Number:
+                            </h1>
                             <p className="text-gray-800">{user.number}</p>
                           </div>
                         )}
                         <div>
                           <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
                             <FontAwesomeIcon icon={faEnvelope} className="text-blue-600 mr-3" />
-                            Email:</h1>
+                            Email:
+                          </h1>
                           <p className="text-gray-800">{user.email}</p>
                         </div>
                       </div>
@@ -155,7 +157,8 @@ const Profile = () => {
                             <div>
                               <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
                                 <FontAwesomeIcon icon={faCalendar} className="text-blue-600 mr-3" />
-                                Date of birth:</h1>
+                                Date of birth:
+                              </h1>
                               <p className="text-gray-800">{user.dateOfBirth || "None"}</p>
                             </div>
                           )}
@@ -163,32 +166,35 @@ const Profile = () => {
                             <div>
                               <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
                                 <FontAwesomeIcon icon={faVenusMars} className="text-blue-600 mr-2" />
-                                Gender:</h1>
+                                Gender:
+                              </h1>
                               <p className="text-gray-800">{user.gender || "None"}</p>
                             </div>
                           )}
                         </div>
                       ) : null}
                     </div>
-                    <div className="ml-20">
+                    <div className="lg:ml-20">
                       <div className="mt-5">
                         <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Account information</h1>
                         <div>
                           <h1 className="text-black font-semibold underline underline-offset-4 decoration-2 decoration-gray-800">
                             <FontAwesomeIcon icon={faClock} className="text-blue-600 mr-3" />
-                            Member since:</h1>
+                            Member since:
+                          </h1>
                           <p className="text-gray-800">{user.memberSince}</p>
                         </div>
                         <div>
                           <h1 className="text-black font-semibold mt-2 underline underline-offset-4 decoration-2 decoration-gray-800">
                             <FontAwesomeIcon icon={faIdCard} className="text-blue-600 mr-3" />
-                            User Id:</h1>
+                            User Id:
+                          </h1>
                           <p className="text-gray-800">{user.userId}</p>
                         </div>
                       </div>
                     </div>
                     {Object.keys(user.socialMediaLinks).length > 0 && (
-                      <div className="ml-20 mt-5">
+                      <div className="flex flex-col lg:items-start items-center lg:ml-20 mt-5">
                         <h1 className="mb-3 text-lg font-semibold underline underline-offset-4 decoration-blue-700">Social Media</h1>
                         {Object.entries(user.socialMediaLinks).map(([platform, link]) => (
                           <div key={platform} className="flex items-center mt-2">
@@ -243,12 +249,11 @@ const Profile = () => {
                 )}
               </div>
             </div>
-
           </div>
         })}
       </div>
 
-    </main>
+    </div>
   )
 }
 

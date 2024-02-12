@@ -47,21 +47,21 @@ const LandingPage = () => {
 
     return (
         <div className='flex flex-col pt-10 flex-grow'>
-            <div className="flex justify-center bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 pt-10">
-                <div className="flex flex-col justify-center mr-20 w-1/4 text-start text-white">
-                    <h1 className="font-semibold text-2xl">Become a house sitter,</h1>
-                    <h1 className="font-semibold text-3xl mb-3">Find a house sitter for your home</h1>
-                    <p className="text-lg">Welcome to HouseSittingApp, where your home finds a trusted guardian. Sit back, relax, and let us connect you with reliable house sitters who'll treat your space like their own.</p>
+            <div className="flex flex-col md:flex-row justify-center bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 lg:pt-10 md:pt-20 pt-20 pb-20 md:pb-20 lg:pb-20 px-3 md:px-8">
+                <div className="flex flex-col justify-center mr-20 w-full md:w-1/2 lg:text-start md:text-start text-center text-white">
+                    <h1 className="font-semibold text-2xl md:text-3xl">Become a house sitter,</h1>
+                    <h1 className="font-semibold text-3xl md:text-4xl mb-3">Find a house sitter for your home</h1>
+                    <p className="text-lg md:text-xl">Welcome to HouseSittingApp, where your home finds a trusted guardian. Sit back, relax, and let us connect you with reliable house sitters who'll treat your space like their own.</p>
                 </div>
                 <div>
-                    <img src="/images/Landingpageimage.png" alt="" />
+                    <img src="/images/Landingpageimage.png" alt="" className="w-full md:w-auto" />
                 </div>
             </div>
-            <div className="flex">
-                <div className="w-1/2 border-4 border-r-blue-600 border-b-0 border-t-0 pb-20 pt-20">
+            <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-1/2 border-4 border-r-blue-600 border-b-0 border-t-0 pb-20 pt-20 px-3">
                     <div className="lg:px-[30%]">
-                        <h1 className="text-gray-800 underline underline-offset-4 decoration-blue-600 text-3xl font-semibold mb-5">Become a house sitter</h1>
-                        <p className="mb-8 text-xl">
+                        <h1 className="text-gray-800 underline underline-offset-4 decoration-blue-600 text-3xl md:text-4xl font-semibold mb-5">Become a house sitter</h1>
+                        <p className="mb-8 text-base md:text-lg">
                             House sitting offers a unique blend of travel and responsibility. As a house sitter, you'll enjoy exploring new locations while providing homeowners with peace of mind. Your role includes maintaining their property, handling routine tasks, and ensuring the safety of their home. This cost-effective and rewarding opportunity is ideal for responsible individuals with a love for pets and excellent communication skills.
                         </p>
                         <button
@@ -73,14 +73,14 @@ const LandingPage = () => {
                         {showSignInMessage && clickedButton === "register" && <p className="text-red-600 mt-3 font-semibold">You must be signed in. Please wait...</p>}
                     </div>
                 </div>
-                <div className="w-1/2 pb-20 pt-20">
+                <div className="w-full md:w-1/2 pb-20 pt-20 px-3">
                     <div className="lg:px-[30%]">
-                        <h1 className="text-gray-800 underline underline-offset-4 decoration-blue-600 text-3xl font-semibold mb-5">Find a house sitter</h1>
-                        <p className="mb-5 text-xl">
+                        <h1 className="text-gray-800 underline underline-offset-4 decoration-blue-600 text-3xl md:text-4xl font-semibold mb-5">Find a house sitter</h1>
+                        <p className="mb-5 text-base md:text-lg md:mt-16">
                             Discovering the ideal house sitter is simple with our platform. Explore a curated list of responsible individuals ready to care for your home and pets. Our user-friendly interface and detailed profiles make connecting with trustworthy house sitters a breeze. Travel worry-free, knowing your property is in capable hands. Find a house sitter today for peace of mind and reliable care for your home.
                         </p>
                         <button
-                            className="bg-blue-600 hover:bg-white hover:border-2 border-blue-600 hover:text-blue-600 text-white font-semibold px-4 py-3 rounded-md drop-shadow-lg mt-8"
+                            className="bg-blue-600 hover:bg-white hover:border-2 border-blue-600 hover:text-blue-600 text-white font-semibold px-4 py-3 rounded-md drop-shadow-lg mt-8 md:mt-1"
                             onClick={SittersNavigation}
                         >
                             Find sitter
@@ -89,9 +89,9 @@ const LandingPage = () => {
                     </div>
                 </div>
             </div>
-            <div className="bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 text-white">
-                <h1 className="pt-10 text-3xl font-semibold underline underline-offset-4">Contact Us</h1>
-                <p className="mt-5 text-xl">Want to contact us at the HouseSittingApp? Click on the button below to send us an email.</p>
+            <div className="bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 text-white px-3">
+                <h1 className="pt-10 text-3xl md:text-4xl font-semibold underline underline-offset-4">Contact Us</h1>
+                <p className="mt-5 text-base md:text-lg">Want to contact us at the HouseSittingApp? Click on the button below to send us an email.</p>
                 <button
                     className="mt-5 mb-10 font-bold bg-blue-700 text-white px-4 py-3 rounded-md drop-shadow-lg border border-white hover:bg-white hover:text-blue-700 hover:border-blue-700"
                     onClick={ContactNavigation}

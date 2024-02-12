@@ -112,9 +112,9 @@ const ProfileForm = () => {
 
     return (
         <div className="min-h-screen pt-32 bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700">
-            <div className="flex text-start justify-center pt-10">
+            <div className="flex text-start justify-center pt-10 pb-10">
                 <div className="w-3/4 border border-black rounded-md">
-                    <div className="mt-5 md:col-span-2 md:mt-0">
+                    <div className="md:col-span-2 md:mt-0">
                         <form action="#">
                             <div className="bg-white shadow sm:overflow-hidden sm:rounded-md">
                                 <div className="text-center text-3xl font-semibold pt-8 underline underline-offset-4 decoration-blue-700">
@@ -321,7 +321,7 @@ const ProfileForm = () => {
                                         </div>
                                     </div>
                                 )}
-                                <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
+                                <div className="bg-gray-50 px-4 py-3 lg:text-right md:text-right text-center sm:px-6">
                                     {isLoading ? (
                                         <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
                                     ) : (
