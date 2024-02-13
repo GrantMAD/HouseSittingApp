@@ -5,6 +5,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -60,6 +61,13 @@ const Users = () => {
         }
     };
 
+    const handleSearchInputChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
+
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
 
     return (
@@ -67,7 +75,20 @@ const Users = () => {
             <div className="flex justify-center pt-20 md:pt-10 pb-5">
                 <h1 className="text-3xl md:text-4xl text-black font-semibold underline underline-offset-8 decoration-2 decoration-blue-700">Users</h1>
             </div>
+            <div className="flex ml-32">
+            <div className="flex justify-center pb-5 mr-10">
+                <input
+                    type="text"
+                    placeholder="Search by name"
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    className="px-4 py-2 border border-blue-600 rounded-md shadow-lg focus:outline-none focus:border-blue-400"
+                />
+            </div>
+            <div className="flex items-center">
             <p className="text-center md:text-left lg:pl-5">This page is here to allow admins to view all users that have currently signed up. This page is only visible to admins.</p>
+            </div>
+            </div>
             <div className="mt-5 overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -79,7 +100,7 @@ const Users = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {users.map(user => (
+                    {filteredUsers.map(user => (
                             <tr key={user.uid}>
                                 <td className="w-1/2 sm:w-1/4 px-6 py-4 whitespace-nowrap text-sm md:text-md">{user.name}</td>
                                 <td className="w-1/2 sm:w-1/4 px-6 py-4 whitespace-nowrap text-sm md:text-md">{user.email}</td>

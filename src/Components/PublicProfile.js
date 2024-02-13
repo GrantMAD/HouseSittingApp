@@ -283,7 +283,7 @@ const PublicProfile = () => {
 
                             <div className="space-x-8 lg:space-x-8 md:space-x-2 flex justify-center mt-32 mr-14 md:mt-0 md:justify-center lg:justify-end lg:mr-5">
                                 <button
-                                    className="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
+                                    className="h-10 w-400 text-white py-2 px-4 uppercase rounded bg-gradient-to-r from-green-400 via-cyan-900 to-blue-700 hover:scale-105 shadow hover:shadow-lg font-medium ml-[60px] lg:ml-0"
                                     onClick={backToFind}
                                 >
                                     Back to find sitters

@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { db } from "../firebase";
 
 const Sitters = () => {
     const [approvedSitters, setApprovedSitters] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const contactUsRef = useRef();
 
     const StarRating = ({ rating }) => {
@@ -40,6 +39,7 @@ const Sitters = () => {
                     };
                 }));
                 setApprovedSitters(sitters);
+                setIsLoading(false);
             } catch (error) {
                 console.error("Error fetching approved sitters:", error);
             }
@@ -64,9 +64,14 @@ const Sitters = () => {
             <div className="p-8">
                 <p>Find the perfect house sitter for your home with ease. Explore our curated network of reliable sitters, each committed to safeguarding your property. Browse profiles, reviews, and references to make the right choice. Your ideal house sitter is just a click away—travel with confidence, knowing your home is in capable hands.</p>
             </div>
+            {isLoading ? (
+                <div className="flex justify-center items-center">
+                    <div className="inline-block animate-spin rounded-full border-t-4 border-blue-800 border-solid h-8 w-8"></div>
+                </div>
+            ) : (
             <div className="flex flex-wrap justify-center lg:justify-start md:justify-start p-8">
                 {approvedSitters.map(sitter => (
-                    <div key={sitter.id} className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 mb-4 px-2">
+                    <div key={sitter.id} className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/6 mb-4 px-2">
                         <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md shadow-gray-600 border border-blue-700">
                             <div className="border-b px-4 pb-6">
                                 <div className="text-center my-4">
@@ -74,12 +79,13 @@ const Sitters = () => {
                                         src={sitter.profileImage || "/images/profileAvatar.png"}
                                         alt={sitter.name} />
                                     <div className="flex flex-col items-center py-2">
+                                        <div>
                                         <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-1 underline underline-offset-2 decoration-blue-700">
                                             {sitter.name.trim().split(/\s+/).slice(0, 1).join(' ')} {sitter.name.trim().split(/\s+/).slice(-1).join(' ')}
                                         </h3>
-                                        <div className="flex items-center">
-                                            <FontAwesomeIcon icon={faClock} className="text-blue-600 mr-2" />
-                                            <h1>{sitter.memberSince}</h1>
+                                        <div className="flex flex-col items-center">
+                                            <h1>{sitter.email}</h1>
+                                        </div>
                                         </div>
                                         <StarRating rating={sitter.roundedRating} />
                                     </div>
@@ -99,6 +105,7 @@ const Sitters = () => {
                     </div>
                 ))}
             </div>
+            )}
         </div>
     )
 }

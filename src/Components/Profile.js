@@ -108,7 +108,7 @@ const Profile = () => {
                   onMouseLeave={() => setShowTooltip(false)}
                 >
                   <button
-                    className="bg-gradient-to-l from-red-500 to-red-600 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-white font-bold py-2 px-4 rounded shadow-xl"
+                    className="bg-gradient-to-l from-red-700 to-red-500 hover:bg-gradient-to-r hover:scale-105 hover:drop-shadow-2xl text-white font-bold py-2 px-4 rounded shadow-xl"
                     onClick={async () => {
                       deleteAccount(user.id);
                     }}
@@ -117,7 +117,7 @@ const Profile = () => {
                   </button>
                   {showTooltip && (
                     <div className="absolute bg-zinc-200 rounded-md px-2 py-1 text-gray-800 border border-gray-800 mt-2 whitespace-nowrap mr-32 -right-32 font-semibold">
-                      By clicking Delete Account you will be deleting your account from our database.
+                      By clicking Delete Account you will be removing your account from our database.
                     </div>
                   )}
                 </div>
